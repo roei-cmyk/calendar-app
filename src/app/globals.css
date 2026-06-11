@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #111111;
+  --background: #f5f3ff;
+  --foreground: #1e1b4b;
 }
 
 html,
@@ -25,10 +25,9 @@ body {
 }
 
 ::selection {
-  background: rgba(17, 17, 17, 0.12);
+  background: rgba(124, 58, 237, 0.15);
 }
 
-/* Keep native controls light to match the theme (date/time pickers, dropdowns). */
 input[type="date"],
 input[type="time"],
 select {
@@ -37,40 +36,40 @@ select {
 
 @layer components {
   .input {
-    @apply w-full rounded-md border border-line-strong bg-white px-3 py-2 text-sm
-      text-ink outline-none transition placeholder:text-ink-faint
-      focus:border-ink focus:ring-1 focus:ring-ink/20
-      disabled:cursor-default disabled:bg-gray-50 disabled:text-ink-muted;
+    @apply w-full rounded-lg border border-[#c4b5fd] bg-white px-3 py-2 text-sm
+      text-[#1e1b4b] outline-none transition placeholder:text-[#9ca3af]
+      focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/20
+      disabled:cursor-default disabled:bg-[#ede9fe]/50 disabled:text-[#6b7280];
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2
-      text-sm font-medium text-white transition hover:bg-black
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#7c3aed] px-4 py-2
+      text-sm font-semibold text-white shadow-sm transition hover:bg-[#6d28d9]
       disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm
-      font-medium text-ink-muted transition hover:bg-gray-100 hover:text-ink;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm
+      font-medium text-white/70 transition hover:bg-white/10 hover:text-white;
   }
 
   .panel {
-    @apply rounded-lg border border-line bg-white;
+    @apply rounded-2xl border border-[#ddd6fe] bg-white;
+    box-shadow: 0 6px 20px -6px rgb(124 58 237 / 0.12), 0 2px 8px -3px rgb(76 29 149 / 0.08);
   }
 }
 
-/* Thin, unobtrusive scrollbars for calendar scroll areas */
 .scroll-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #c4b5fd;
   border-radius: 9999px;
 }
 .scroll-thin::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #a78bfa;
 }

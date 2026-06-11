@@ -48,7 +48,6 @@ export function Planner({
   const isAdmin = profile.role === "admin";
   const [view, setView] = useState<CalendarView>("month");
   const [current, setCurrent] = useState<Date>(() => new Date());
-  // Admin can filter to a single client; null = all clients.
   const [clientFilter, setClientFilter] = useState<string | null>(
     isAdmin ? null : profile.client_id,
   );
@@ -98,7 +97,6 @@ export function Planner({
     return map;
   }, [posts, statusFilter]);
 
-  // Drag-to-reschedule: optimistic update, then persist (revert on failure).
   const handleMovePost = useCallback(
     async (postId: string, newDate: string) => {
       const target = posts.find((p) => p.id === postId);
@@ -112,7 +110,7 @@ export function Planner({
       try {
         await updatePost(postId, { scheduled_date: newDate });
       } catch {
-        setPosts(prev); // revert
+        setPosts(prev);
       }
     },
     [posts],
@@ -149,50 +147,68 @@ export function Planner({
 
   return (
     <div className="flex h-screen flex-col bg-canvas">
-      {/* Top bar */}
-      <header className="flex items-center justify-between border-b border-line bg-white px-5 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="text-lg font-extrabold tracking-tight text-ink">
+      {/* Top bar — KNBL purple gradient */}
+      <header
+        className="relative flex items-center justify-between overflow-hidden px-5 py-3"
+        style={{
+          background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 60%, #a78bfa 100%)",
+        }}
+      >
+        <span className="pointer-events-none absolute left-10 top-1 h-8 w-8 rounded-full bg-white/10" />
+        <span className="pointer-events-none absolute left-24 bottom-0 h-5 w-5 rounded-full bg-white/8" />
+        <span className="pointer-events-none absolute right-64 top-1 h-4 w-4 rounded-full bg-white/10" />
+
+        <div className="relative flex items-center gap-2.5">
+          <span className="text-lg font-extrabold tracking-tight text-white drop-shadow">
             KNBL
           </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-ink" />
-          <span className="text-sm font-medium text-ink-faint">לוח תוכן</span>
+          <span className="h-2 w-2 rounded-full bg-white/80" />
+          <span className="text-sm font-medium text-white/60">לוח תוכן</span>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="relative flex items-center gap-3">
           <div className="hidden items-center gap-2.5 sm:flex">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-ink ring-1 ring-line">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white ring-1 ring-white/30">
               {(profile.full_name ?? "מ").trim().charAt(0)}
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-medium text-ink">
+              <div className="text-sm font-semibold text-white">
                 {profile.full_name ?? "משתמש"}
               </div>
-              <div className="text-[11px] text-ink-faint">
+              <div className="text-[11px] text-white/50">
                 {isAdmin ? "מנהל מערכת" : "לקוח"}
               </div>
             </div>
           </div>
           <form action={logout}>
-            <button className="btn-ghost px-3 py-1.5">יציאה</button>
+            <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
+              יציאה
+            </button>
           </form>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="hidden w-60 shrink-0 flex-col gap-4 border-s border-line bg-sidebar p-4 md:flex">
+        {/* Sidebar — dark purple */}
+        <aside
+          className="hidden w-60 shrink-0 flex-col gap-4 p-4 md:flex"
+          style={{ background: "linear-gradient(180deg, #2e1065 0%, #1e1b4b 100%)" }}
+        >
+          <span className="pointer-events-none absolute mt-8 ms-40 h-12 w-12 rounded-full bg-violet-400/10" />
+          <span className="pointer-events-none absolute mt-32 ms-2 h-8 w-8 rounded-full bg-violet-300/10" />
+
           <div>
-            <h3 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-faint">
+            <h3 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">
               לקוחות
             </h3>
             <div className="flex flex-col gap-0.5">
               {isAdmin && (
                 <button
                   onClick={() => setClientFilter(null)}
-                  className={`rounded-md px-3 py-2 text-right text-sm transition ${
+                  className={`rounded-lg px-3 py-2 text-right text-sm transition ${
                     clientFilter === null
-                      ? "bg-white font-medium text-ink shadow-[0_0_0_1px_#e0e0e0]"
-                      : "text-ink-muted hover:bg-black/[0.04] hover:text-ink"
+                      ? "bg-white/15 font-semibold text-white shadow-sm"
+                      : "text-white/50 hover:bg-white/[0.08] hover:text-white/80"
                   }`}
                 >
                   כל הלקוחות
@@ -204,14 +220,14 @@ export function Planner({
                   <button
                     key={c.id}
                     onClick={() => setClientFilter(c.id)}
-                    className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-right text-sm transition ${
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition ${
                       active
-                        ? "bg-white font-medium text-ink shadow-[0_0_0_1px_#e0e0e0]"
-                        : "text-ink-muted hover:bg-black/[0.04] hover:text-ink"
+                        ? "bg-white/15 font-semibold text-white"
+                        : "text-white/50 hover:bg-white/[0.08] hover:text-white/80"
                     }`}
                   >
                     <span
-                      className="h-3 w-3 shrink-0 rounded-full"
+                      className="h-2.5 w-2.5 shrink-0 rounded-full shadow-sm"
                       style={{ backgroundColor: c.color }}
                     />
                     <span className="truncate">{c.name}</span>
@@ -225,24 +241,24 @@ export function Planner({
         {/* Main */}
         <main className="flex flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white px-4 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white px-4 py-2.5 shadow-sm">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
-                className="rounded-lg px-2.5 py-1.5 text-ink-muted transition hover:bg-gray-100 hover:text-ink"
+                className="rounded-full px-2.5 py-1.5 text-brand transition hover:bg-brand-lighter"
                 aria-label="הקודם"
               >
                 ›
               </button>
               <button
                 onClick={() => setCurrent(new Date())}
-                className="rounded-full border border-line-strong px-3.5 py-1.5 text-sm font-medium text-ink transition hover:bg-gray-50"
+                className="rounded-full border border-brand/30 bg-brand-lighter px-3.5 py-1.5 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
               >
                 היום
               </button>
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
-                className="rounded-lg px-2.5 py-1.5 text-ink-muted transition hover:bg-gray-100 hover:text-ink"
+                className="rounded-full px-2.5 py-1.5 text-brand transition hover:bg-brand-lighter"
                 aria-label="הבא"
               >
                 ‹
@@ -251,7 +267,7 @@ export function Planner({
                 {rangeLabel}
               </span>
               {loading && (
-                <span className="ms-2 text-xs text-ink-faint">טוען…</span>
+                <span className="ms-2 text-xs text-brand-light">טוען…</span>
               )}
             </div>
 
@@ -261,7 +277,7 @@ export function Planner({
                 onChange={(e) =>
                   setStatusFilter(e.target.value as PostStatus | "all")
                 }
-                className="rounded-full border border-line-strong bg-white px-3 py-1.5 text-sm text-ink outline-none transition hover:bg-gray-50 focus:border-ink focus:ring-2 focus:ring-black/10"
+                className="rounded-full border border-line-strong bg-white px-3 py-1.5 text-sm text-ink outline-none transition hover:border-brand/40 focus:border-brand focus:ring-2 focus:ring-brand/15"
               >
                 <option value="all">כל הסטטוסים</option>
                 {(Object.keys(POST_STATUS_LABELS) as PostStatus[]).map((s) => (
@@ -271,15 +287,15 @@ export function Planner({
                 ))}
               </select>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 {(["day", "week", "month"] as CalendarView[]).map((v) => (
                   <button
                     key={v}
                     onClick={() => setView(v)}
                     className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
                       view === v
-                        ? "border-ink bg-ink text-white"
-                        : "border-line-strong bg-white text-ink hover:bg-gray-50"
+                        ? "border-brand bg-brand text-white shadow-sm"
+                        : "border-line-strong bg-white text-ink-muted hover:border-brand/30 hover:bg-brand-lighter hover:text-brand"
                     }`}
                   >
                     {VIEW_LABELS[v]}

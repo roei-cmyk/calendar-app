@@ -26,11 +26,12 @@ export function MonthView({
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <div className="grid grid-cols-7 border-b border-line">
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 border-b border-line bg-brand-lighter">
         {HEB_WEEKDAY_SHORT.map((d) => (
           <div
             key={d}
-            className="py-2 text-center text-xs font-medium text-ink-muted"
+            className="py-2 text-center text-xs font-semibold text-brand"
           >
             {d}
           </div>
@@ -56,15 +57,15 @@ export function MonthView({
                     }
                   : undefined
               }
-              className={`group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s border-line p-1.5 ${
-                inMonth ? "bg-white" : "bg-neutral-50"
+              className={`group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s border-line p-1.5 transition ${
+                inMonth ? "bg-white hover:bg-brand-lighter/30" : "bg-canvas/60"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span
-                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs ${
+                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium ${
                     isToday(day)
-                      ? "bg-ink font-medium text-white"
+                      ? "bg-brand text-white shadow-sm"
                       : inMonth
                         ? "text-ink-muted"
                         : "text-ink-faint"
@@ -75,7 +76,7 @@ export function MonthView({
                 {canEdit && (
                   <button
                     onClick={() => onCreateForDate(key)}
-                    className="flex h-5 w-5 items-center justify-center rounded text-ink-faint opacity-0 transition hover:bg-gray-100 hover:text-ink group-hover/cell:opacity-100"
+                    className="flex h-5 w-5 items-center justify-center rounded-full text-brand opacity-0 transition hover:bg-brand-lighter group-hover/cell:opacity-100"
                     title="הוספת פוסט"
                   >
                     +

@@ -3,9 +3,8 @@
 import type { Client, Post } from "@/lib/types";
 import { POST_STATUS_LABELS } from "@/lib/types";
 
-// Light status accents — green / orange / purple family.
 const STATUS_RING: Record<Post["status"], string> = {
-  draft: "bg-gray-100 text-gray-600 ring-gray-200",
+  draft: "bg-gray-100 text-gray-500 ring-gray-200",
   pending: "bg-amber-100 text-amber-700 ring-amber-200",
   approved: "bg-emerald-100 text-emerald-700 ring-emerald-200",
   scheduled: "bg-sky-100 text-sky-700 ring-sky-200",
@@ -27,7 +26,7 @@ export function PostCard({
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
 }) {
-  const color = client?.color ?? "#a1a1aa";
+  const color = client?.color ?? "#a78bfa";
 
   return (
     <button
@@ -35,15 +34,15 @@ export function PostCard({
       draggable={draggable}
       onDragStart={onDragStart}
       style={{ borderInlineStartColor: color }}
-      className={`group w-full rounded border border-line border-s-[3px] bg-white px-2 py-1 text-right transition hover:bg-neutral-50 ${
+      className={`group w-full rounded-lg border border-line border-s-[3px] bg-white px-2 py-1.5 text-right shadow-card transition hover:shadow-cardHover hover:-translate-y-px ${
         draggable ? "cursor-grab active:cursor-grabbing" : ""
       } ${compact ? "text-[11px]" : "text-xs"}`}
     >
       <div className="flex items-center justify-between gap-1">
-        <span className="truncate font-medium text-ink">{post.title}</span>
+        <span className="truncate font-semibold text-ink">{post.title}</span>
         <span className="flex shrink-0 items-center gap-1.5">
           {!!post.comment_count && (
-            <span className="flex items-center gap-0.5 text-[10px] text-ink-faint">
+            <span className="flex items-center gap-0.5 text-[10px] text-brand-light">
               <span>💬</span>
               {post.comment_count}
             </span>
