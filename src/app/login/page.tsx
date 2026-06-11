@@ -6,7 +6,7 @@ export default function LoginPage({
   searchParams: { error?: string };
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-canvas p-4">
+    <main className="flex min-h-screen items-center justify-center bg-yellow-300 p-4">
       <div className="w-full max-w-sm">
         {/* Brand mark */}
         <div className="mb-8 text-center">
