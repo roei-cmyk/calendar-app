@@ -54,6 +54,23 @@ export function PostCard({
           )}
         </span>
       </div>
+      {post.media_url && !compact && (
+        <div className="mt-1.5 overflow-hidden rounded-md border border-line">
+          {/\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url) ? (
+            <div className="flex h-9 items-center justify-center gap-1.5 bg-gray-900 text-[10px] text-white/70">
+              <span>▶</span>
+              <span>סרטון</span>
+            </div>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.media_url}
+              alt=""
+              className="h-12 w-full object-cover"
+            />
+          )}
+        </div>
+      )}
       {!compact && (
         <div className="mt-1.5 flex items-center justify-between gap-1">
           {client && (
@@ -71,6 +88,11 @@ export function PostCard({
             {POST_STATUS_LABELS[post.status]}
           </span>
         </div>
+      )}
+      {compact && post.media_url && (
+        <span className="text-[9px] text-ink-faint">
+          {/\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url) ? "▶" : "🖼"}
+        </span>
       )}
     </button>
   );
