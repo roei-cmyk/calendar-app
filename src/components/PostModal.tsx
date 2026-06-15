@@ -54,6 +54,7 @@ export function PostModal({
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Comments
   const [comments, setComments] = useState<Comment[]>([]);
@@ -99,6 +100,26 @@ export function PostModal({
     } catch (e) {
       setError((e as Error).message ?? "מחיקה נכשלה");
       setSaving(false);
+    }
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "שגיאה בהעלאה");
+      update("media_url", data.url);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
     }
   }
 
@@ -210,28 +231,73 @@ export function PostModal({
             </Field>
           </div>
 
-          {/* Platform + media */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="פלטפורמה">
-              <input
-                className={inputCls}
-                value={form.platform ?? ""}
-                disabled={!canEdit}
-                placeholder="אינסטגרם / פייסבוק"
-                onChange={(e) => update("platform", e.target.value)}
-              />
-            </Field>
-            <Field label="קישור מדיה">
-              <input
-                className={inputCls}
-                dir="ltr"
-                value={form.media_url ?? ""}
-                disabled={!canEdit}
-                placeholder="https://"
-                onChange={(e) => update("media_url", e.target.value)}
-              />
-            </Field>
-          </div>
+          {/* Platform */}
+          <Field label="פלטפורמה">
+            <input
+              className={inputCls}
+              value={form.platform ?? ""}
+              disabled={!canEdit}
+              placeholder="אינסטגרם / פייסבוק / טיקטוק"
+              onChange={(e) => update("platform", e.target.value)}
+            />
+          </Field>
+
+          {/* Media upload */}
+          <Field label="תמונה / סרטון">
+            {form.media_url ? (
+              <div className="relative overflow-hidden rounded-xl border border-line bg-gray-50">
+                {/\.(mp4|mov|avi|webm|mkv)$/i.test(form.media_url) ? (
+                  <video
+                    src={form.media_url}
+                    controls
+                    className="max-h-52 w-full object-contain"
+                  />
+                ) : (
+                  <img
+                    src={form.media_url}
+                    alt="תצוגה מקדימה"
+                    className="max-h-52 w-full object-contain"
+                  />
+                )}
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => update("media_url", "")}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-sm text-white transition hover:bg-black/70"
+                    title="הסר קובץ"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ) : canEdit ? (
+              <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-canvas p-6 transition hover:border-brand/50 hover:bg-brand-lighter/20">
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*,video/*"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                />
+                {uploading ? (
+                  <>
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                    <span className="text-sm font-medium text-brand">מעלה קובץ…</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-3xl">🖼️</span>
+                    <span className="text-sm font-medium text-ink-muted group-hover:text-brand">
+                      לחץ לבחירת קובץ
+                    </span>
+                    <span className="text-xs text-ink-faint">תמונות וסרטונים עד 50MB</span>
+                  </>
+                )}
+              </label>
+            ) : form.media_url === "" || form.media_url === null ? (
+              <p className="text-sm text-ink-faint">אין מדיה</p>
+            ) : null}
+          </Field>
 
           {/* Body */}
           <Field label="תוכן">
