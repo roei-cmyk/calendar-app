@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 
+// Allow up to 60 seconds (requires Vercel Pro — on Hobby the cap is 10s)
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,6 +14,7 @@ export async function POST(req: NextRequest) {
   const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY!,
   });
+
   try {
     const { clientId, month, instructions } = await req.json() as {
       clientId: string;
@@ -22,7 +26,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "חסרים פרטים" }, { status: 400 });
     }
 
-    // Get client info
     const { data: client } = await supabase
       .from("clients")
       .select("id, name")
@@ -33,7 +36,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "לקוח לא נמצא" }, { status: 404 });
     }
 
-    // Get admin profile
     const { data: adminProfile } = await supabase
       .from("profiles")
       .select("id")
@@ -41,63 +43,46 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .single();
 
-    // Parse month to get date range
     const [year, mon] = month.split("-").map(Number);
     const daysInMonth = new Date(year, mon, 0).getDate();
 
-    // Call Claude API
+    // Compact prompt — less tokens = faster response
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
       messages: [
         {
           role: "user",
-          content: `אתה עוזר ליצירת לוח תוכן לרשתות חברתיות עבור הלקוח: ${client.name}.
-
-החודש: ${month} (${daysInMonth} ימים)
-
+          content: `צור לוח תוכן חודשי לרשתות חברתיות עבור: ${client.name}.
+חודש: ${month} (${daysInMonth} ימים)
 הוראות: ${instructions}
 
-צור לוח תוכן חודשי. החזר JSON בלבד, ללא טקסט נוסף, בפורמט הבא:
-{
-  "posts": [
-    {
-      "title": "כותרת הפוסט",
-      "body": "תוכן מלא של הפוסט",
-      "platform": "פייסבוק",
-      "scheduled_date": "${month}-01",
-      "scheduled_time": "10:00"
-    }
-  ]
-}
+החזר JSON בלבד:
+{"posts":[{"title":"...","body":"...","platform":"...","scheduled_date":"${month}-DD","scheduled_time":"HH:MM"}]}
 
-חשוב:
-- scheduled_date חייב להיות בפורמט YYYY-MM-DD בתוך החודש ${month}
-- פזר את הפוסטים לאורך כל החודש
-- כתוב תוכן אמיתי ומקצועי בעברית
-- החזר JSON בלבד ללא הסברים`,
+כללים: scheduled_date בפורמט ${month}-DD, פזר לאורך החודש, עברית בלבד, JSON בלבד.`,
         },
       ],
     });
 
-    // Extract JSON from response
     const rawText = message.content[0].type === "text" ? message.content[0].text : "";
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return NextResponse.json({ error: "שגיאה בפענוח התגובה מ-Claude" }, { status: 500 });
+      return NextResponse.json({ error: "שגיאה בפענוח התגובה" }, { status: 500 });
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as { posts: Array<{
-      title: string;
-      body?: string;
-      platform?: string;
-      scheduled_date: string;
-      scheduled_time?: string;
-    }> };
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      posts: Array<{
+        title: string;
+        body?: string;
+        platform?: string;
+        scheduled_date: string;
+        scheduled_time?: string;
+      }>;
+    };
 
-    // Delete existing drafts for this month
     const from = `${month}-01`;
-    const to = `${month}-${daysInMonth}`;
+    const to = `${month}-${String(daysInMonth).padStart(2, "0")}`;
     await supabase
       .from("posts")
       .delete()
@@ -106,7 +91,6 @@ export async function POST(req: NextRequest) {
       .gte("scheduled_date", from)
       .lte("scheduled_date", to);
 
-    // Insert new posts
     const rows = parsed.posts.map((p) => ({
       client_id: clientId,
       title: p.title,
@@ -127,10 +111,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: insertErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      inserted: inserted?.length ?? 0,
-    });
+    return NextResponse.json({ success: true, inserted: inserted?.length ?? 0 });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
