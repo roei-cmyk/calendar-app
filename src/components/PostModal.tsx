@@ -15,6 +15,11 @@ import {
 const STATUSES: PostStatus[] = ["draft", "pending", "approved", "scheduled", "published"];
 const inputCls = "input";
 
+function parsePlatforms(raw: string | null): string[] {
+  if (!raw) return [];
+  return raw.split(",").map(s => s.trim()).filter(Boolean);
+}
+
 function PlatformIcon({ platform, size = 20 }: { platform: string; size?: number }) {
   const key = platform.toLowerCase();
   if (key === "פייסבוק" || key === "facebook") return (
@@ -136,9 +141,7 @@ function ClientPostView({
   }, [post.id]);
 
   const isVideo = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
-  const platformKey = post.platform?.toLowerCase() ?? "";
-  const platformColor = PLATFORM_COLORS[post.platform ?? ""] ?? PLATFORM_COLORS[platformKey] ?? { bg: "#f3f4f6", text: "#6b7280" };
-  const hasPlatformIcon = post.platform && (PLATFORM_COLORS[post.platform] || PLATFORM_COLORS[platformKey]);
+  const platforms = parsePlatforms(post.platform);
   const statusCfg = STATUS_STYLE[currentStatus];
 
   const hebDate = new Date(post.scheduled_date).toLocaleDateString("he-IL", {
@@ -237,17 +240,18 @@ function ClientPostView({
             </div>
           )}
 
-          {/* Platform + status + date */}
+          {/* Platform badges + date */}
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            {post.platform && (
-              <span
-                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-                style={{ backgroundColor: platformColor.bg, color: platformColor.text }}
-              >
-                {hasPlatformIcon && <PlatformIcon platform={post.platform} size={14} />}
-                {post.platform}
-              </span>
-            )}
+            {platforms.map(p => {
+              const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
+              return (
+                <span key={p} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ backgroundColor: color.bg, color: color.text }}>
+                  <PlatformIcon platform={p} size={14} />
+                  {p}
+                </span>
+              );
+            })}
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.cls}`}>
               {statusCfg.label}
             </span>
@@ -269,44 +273,61 @@ function ClientPostView({
             </p>
           )}
 
-          {/* Status picker */}
-          <div className="mb-5 rounded-2xl border border-[#ede9fe] bg-[#faf8ff] p-4">
-            <p className="mb-3 text-xs font-semibold text-[#6b7280]">שנה סטטוס</p>
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  { value: "draft",     label: "טיוטה",          bg: "bg-gray-100",    text: "text-gray-600",   ring: "ring-gray-200"   },
-                  { value: "pending",   label: "ממתין לאישור",   bg: "bg-amber-100",   text: "text-amber-700",  ring: "ring-amber-200"  },
-                  { value: "approved",  label: "✓ מאושר",        bg: "bg-emerald-100", text: "text-emerald-700",ring: "ring-emerald-200" },
-                  { value: "scheduled", label: "מתוזמן",         bg: "bg-sky-100",     text: "text-sky-700",    ring: "ring-sky-200"    },
-                  { value: "published", label: "פורסם",          bg: "bg-violet-100",  text: "text-violet-700", ring: "ring-violet-200" },
-                ] as const
-              ).map(s => (
-                <button
-                  key={s.value}
-                  disabled={busy}
-                  onClick={async () => {
-                    if (s.value === currentStatus) return;
-                    setBusy(true);
-                    try {
-                      await updatePost(post.id, { status: s.value });
-                      setCurrentStatus(s.value);
-                      onChanged();
-                    } finally { setBusy(false); }
-                  }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition
-                    ${s.bg} ${s.text} ${s.ring}
-                    ${currentStatus === s.value
-                      ? "scale-105 shadow-sm ring-2"
-                      : "opacity-60 hover:opacity-100"
-                    }
-                    disabled:cursor-not-allowed`}
-                >
-                  {currentStatus === s.value && "● "}{s.label}
-                </button>
-              ))}
-            </div>
+          {/* Client approval actions */}
+          <div className="mb-5 flex gap-3">
+            {currentStatus === "approved" ? (
+              <div className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700">
+                <span>✓</span> הפוסט מאושר
+              </div>
+            ) : (
+              <button
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await updatePost(post.id, { status: "approved" });
+                    setCurrentStatus("approved");
+                    onChanged();
+                  } finally { setBusy(false); }
+                }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+              >
+                ✓ אשר פוסט
+              </button>
+            )}
+            <button
+              disabled={busy}
+              onClick={() => setChangeMode(v => !v)}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold transition
+                ${changeMode
+                  ? "border-rose-300 bg-rose-50 text-rose-700"
+                  : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                } disabled:opacity-50`}
+            >
+              ↩ בקש שינוי
+            </button>
           </div>
+
+          {/* Change request text */}
+          {changeMode && (
+            <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+              <p className="mb-2 text-xs font-semibold text-rose-700">מה צריך לשנות?</p>
+              <textarea
+                className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                rows={3}
+                placeholder="תאר מה תרצה לשנות בפוסט..."
+                value={changeText}
+                onChange={e => setChangeText(e.target.value)}
+              />
+              <button
+                disabled={busy || !changeText.trim()}
+                onClick={requestChanges}
+                className="mt-2 w-full rounded-xl bg-rose-500 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50"
+              >
+                {busy ? "שולח…" : "שלח בקשת שינוי"}
+              </button>
+            </div>
+          )}
 
           {/* Comments */}
           <div className="border-t border-[#f3f0ff] pt-4">
@@ -516,12 +537,18 @@ function AdminPostForm({
             <div className="flex flex-wrap gap-2 pt-0.5">
               {["פייסבוק", "אינסטגרם", "טיקטוק", "לינקדאין", "טוויטר"].map(p => {
                 const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
-                const selected = form.platform === p;
+                const selected = parsePlatforms(form.platform).includes(p);
                 return (
                   <button
                     key={p}
                     type="button"
-                    onClick={() => update("platform", selected ? "" : p)}
+                    onClick={() => {
+                      const current = parsePlatforms(form.platform);
+                      const next = selected
+                        ? current.filter(x => x !== p)
+                        : [...current, p];
+                      update("platform", next.join(",") || null as unknown as string);
+                    }}
                     className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition"
                     style={{
                       backgroundColor: selected ? color.bg : "transparent",
@@ -531,6 +558,7 @@ function AdminPostForm({
                   >
                     <PlatformIcon platform={p} size={14} />
                     {p}
+                    {selected && <span style={{ fontSize: 10 }}>✓</span>}
                   </button>
                 );
               })}
