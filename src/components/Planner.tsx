@@ -61,6 +61,7 @@ export function Planner({
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
   const [ganttOpen, setGanttOpen] = useState(false);
+  const [previewAsClient, setPreviewAsClient] = useState(false);
 
   const clientsById = useMemo(
     () => new Map(clients.map((c) => [c.id, c])),
@@ -138,14 +139,25 @@ export function Planner({
         ? `${formatHebDate(new Date(range.from), "d MMM")} – ${formatHebDate(new Date(range.to), "d MMM yyyy")}`
         : formatHebDate(current, "MMMM yyyy");
 
+  // When preview mode is on, act as a client (read-only)
+  const effectiveCanEdit = isAdmin && !previewAsClient;
+
+  // Reset preview mode when switching to "all clients"
+  const handleClientFilter = (id: string | null) => {
+    setClientFilter(id);
+    if (!id) setPreviewAsClient(false);
+  };
+
+  const activeClient = clientFilter ? clients.find(c => c.id === clientFilter) : null;
+
   const viewProps = {
     current,
     postsByDate,
     clientsById,
-    canEdit: isAdmin,
+    canEdit: effectiveCanEdit,
     onSelectPost: openPost,
-    onCreateForDate: openCreate,
-    onMovePost: isAdmin ? handleMovePost : undefined,
+    onCreateForDate: effectiveCanEdit ? openCreate : () => {},
+    onMovePost: effectiveCanEdit ? handleMovePost : undefined,
   };
 
   return (
@@ -192,6 +204,21 @@ export function Planner({
         </div>
       </header>
 
+      {/* Preview mode banner */}
+      {previewAsClient && activeClient && (
+        <div className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-4 py-1.5">
+          <span className="text-xs font-medium text-amber-700">
+            👁 מצב תצוגת לקוח — {activeClient.name} · אתה רואה את הלוח כפי שהלקוח רואה אותו
+          </span>
+          <button
+            onClick={() => setPreviewAsClient(false)}
+            className="text-xs font-semibold text-amber-700 hover:text-amber-900"
+          >
+            × יציאה
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — dark purple */}
         <aside
@@ -218,7 +245,7 @@ export function Planner({
             <div className="flex flex-col gap-0.5">
               {isAdmin && (
                 <button
-                  onClick={() => setClientFilter(null)}
+                  onClick={() => handleClientFilter(null)}
                   className={`rounded-lg px-3 py-2 text-right text-sm transition ${
                     clientFilter === null
                       ? "bg-white/15 font-semibold text-white shadow-sm"
@@ -233,7 +260,7 @@ export function Planner({
                 return (
                   <button
                     key={c.id}
-                    onClick={() => setClientFilter(c.id)}
+                    onClick={() => handleClientFilter(c.id)}
                     className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition ${
                       active
                         ? "bg-white/15 font-semibold text-white"
@@ -250,6 +277,20 @@ export function Planner({
               })}
             </div>
           </div>
+
+          {/* Preview-as-client toggle — shown when a specific client is selected */}
+          {isAdmin && clientFilter && (
+            <button
+              onClick={() => setPreviewAsClient(v => !v)}
+              className={`mt-auto w-full rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
+                previewAsClient
+                  ? "border-amber-400/60 bg-amber-400/20 text-amber-200 hover:bg-amber-400/30"
+                  : "border-white/15 bg-white/8 text-white/60 hover:bg-white/15 hover:text-white"
+              }`}
+            >
+              {previewAsClient ? "✏️ חזרה למצב עריכה" : `👁 תצוגת ${activeClient?.name ?? "לקוח"}`}
+            </button>
+          )}
         </aside>
 
         {/* Main */}
@@ -344,7 +385,7 @@ export function Planner({
           defaultClientId={clientFilter ?? profile.client_id}
           clients={clients}
           profile={profile}
-          canEdit={isAdmin}
+          canEdit={effectiveCanEdit}
           onClose={() => setModalOpen(false)}
           onChanged={load}
         />
