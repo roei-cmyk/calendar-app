@@ -234,67 +234,44 @@ function ClientPostView({
             </p>
           )}
 
-          {/* Status actions */}
-          {currentStatus === "pending" && !changeMode && (
-            <div className="mb-5 flex gap-2">
-              <button
-                onClick={approve}
-                disabled={busy}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}
-              >
-                {busy ? "…" : "✓ אישור פוסט"}
-              </button>
-              <button
-                onClick={() => setChangeMode(true)}
-                disabled={busy}
-                className="flex-1 rounded-2xl border border-amber-300 bg-amber-50 py-3 text-sm font-bold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50"
-              >
-                ✏️ בקשת שינוי
-              </button>
-            </div>
-          )}
-
-          {currentStatus === "approved" && (
-            <div className="mb-5 flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3">
-              <span className="text-sm font-semibold text-emerald-700">✓ הפוסט מאושר</span>
-              <button
-                onClick={() => setChangeMode(true)}
-                className="text-xs text-amber-600 hover:underline"
-              >
-                בקשת שינוי
-              </button>
-            </div>
-          )}
-
-          {/* Request changes form */}
-          {changeMode && (
-            <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-              <p className="mb-2 text-sm font-semibold text-amber-800">מה צריך לשנות?</p>
-              <textarea
-                className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-300"
-                rows={3}
-                placeholder="תאר מה אתה רוצה לשנות…"
-                value={changeText}
-                onChange={e => setChangeText(e.target.value)}
-              />
-              <div className="mt-2 flex gap-2">
+          {/* Status picker */}
+          <div className="mb-5 rounded-2xl border border-[#ede9fe] bg-[#faf8ff] p-4">
+            <p className="mb-3 text-xs font-semibold text-[#6b7280]">שנה סטטוס</p>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { value: "draft",     label: "טיוטה",          bg: "bg-gray-100",    text: "text-gray-600",   ring: "ring-gray-200"   },
+                  { value: "pending",   label: "ממתין לאישור",   bg: "bg-amber-100",   text: "text-amber-700",  ring: "ring-amber-200"  },
+                  { value: "approved",  label: "✓ מאושר",        bg: "bg-emerald-100", text: "text-emerald-700",ring: "ring-emerald-200" },
+                  { value: "scheduled", label: "מתוזמן",         bg: "bg-sky-100",     text: "text-sky-700",    ring: "ring-sky-200"    },
+                  { value: "published", label: "פורסם",          bg: "bg-violet-100",  text: "text-violet-700", ring: "ring-violet-200" },
+                ] as const
+              ).map(s => (
                 <button
-                  onClick={requestChanges}
-                  disabled={busy || !changeText.trim()}
-                  className="flex-1 rounded-xl bg-amber-500 py-2 text-sm font-bold text-white transition hover:bg-amber-600 disabled:opacity-50"
+                  key={s.value}
+                  disabled={busy}
+                  onClick={async () => {
+                    if (s.value === currentStatus) return;
+                    setBusy(true);
+                    try {
+                      await updatePost(post.id, { status: s.value });
+                      setCurrentStatus(s.value);
+                      onChanged();
+                    } finally { setBusy(false); }
+                  }}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition
+                    ${s.bg} ${s.text} ${s.ring}
+                    ${currentStatus === s.value
+                      ? "scale-105 shadow-sm ring-2"
+                      : "opacity-60 hover:opacity-100"
+                    }
+                    disabled:cursor-not-allowed`}
                 >
-                  {busy ? "שולח…" : "שלח בקשה"}
+                  {currentStatus === s.value && "● "}{s.label}
                 </button>
-                <button
-                  onClick={() => { setChangeMode(false); setChangeText(""); }}
-                  className="rounded-xl border border-amber-200 px-4 py-2 text-sm text-amber-700 hover:bg-amber-100"
-                >
-                  ביטול
-                </button>
-              </div>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Comments */}
           <div className="border-t border-[#f3f0ff] pt-4">
