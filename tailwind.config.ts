@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-heebo)", "system-ui", "sans-serif"],
+        sans: ["var(--font-rubik)", "system-ui", "sans-serif"],
       },
       colors: {
         canvas: "#f5f3ff",
