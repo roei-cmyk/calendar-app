@@ -15,12 +15,43 @@ import {
 const STATUSES: PostStatus[] = ["draft", "pending", "approved", "scheduled", "published"];
 const inputCls = "input";
 
-const PLATFORM_ICON: Record<string, string> = {
-  פייסבוק: "📘", facebook: "📘",
-  אינסטגרם: "📸", instagram: "📸",
-  טיקטוק: "🎵", tiktok: "🎵",
-  לינקדאין: "💼", linkedin: "💼",
-  יוטיוב: "▶️", youtube: "▶️",
+function PlatformIcon({ platform, size = 20 }: { platform: string; size?: number }) {
+  const key = platform.toLowerCase();
+  if (key === "פייסבוק" || key === "facebook") return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#1877F2" aria-label="פייסבוק"><path d="M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.887v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+  );
+  if (key === "אינסטגרם" || key === "instagram") return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-label="אינסטגרם"><defs><linearGradient id="ig" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#FED373"/><stop offset="25%" stopColor="#F15245"/><stop offset="50%" stopColor="#D92E7F"/><stop offset="75%" stopColor="#9B36B7"/><stop offset="100%" stopColor="#515ECF"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig)"/><rect x="2.5" y="2.5" width="19" height="19" rx="4.5" fill="none" stroke="white" strokeWidth="1.5"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="white" strokeWidth="1.5"/><circle cx="17.5" cy="6.5" r="1" fill="white"/></svg>
+  );
+  if (key === "טיקטוק" || key === "tiktok") return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-label="טיקטוק"><rect width="24" height="24" rx="6" fill="#010101"/><path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5 2.592 2.592 0 0 1-2.59-2.5 2.592 2.592 0 0 1 2.59-2.5c.28 0 .54.04.79.1V9.78a5.66 5.66 0 0 0-.79-.05 5.65 5.65 0 0 0-5.65 5.65 5.65 5.65 0 0 0 5.65 5.65 5.65 5.65 0 0 0 5.65-5.65V8.37a7.32 7.32 0 0 0 4.26 1.35V6.66s-2.12.05-3.16-0.84z" fill="white"/><path d="M15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5 2.592 2.592 0 0 1-2.59-2.5 2.592 2.592 0 0 1 2.59-2.5c.28 0 .54.04.79.1V9.78a5.66 5.66 0 0 0-.79-.05 5.65 5.65 0 0 0-5.65 5.65 5.65 5.65 0 0 0 5.65 5.65 5.65 5.65 0 0 0 5.65-5.65V8.37a7.32 7.32 0 0 0 4.26 1.35V6.66S17.4 6.35 16.6 5.82A4.278 4.278 0 0 1 15.54 3z" fill="#69C9D0" opacity="0.6"/></svg>
+  );
+  if (key === "לינקדאין" || key === "linkedin") return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#0A66C2" aria-label="לינקדאין"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+  );
+  if (key === "יוטיוב" || key === "youtube") return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#FF0000" aria-label="יוטיוב"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+  );
+  if (key === "טוויטר" || key === "twitter" || key === "x") return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-label="X"><rect width="24" height="24" rx="6" fill="#000"/><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L2.25 2.25h6.846l4.262 5.633 5.886-5.633zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" fill="white"/></svg>
+  );
+  return null;
+}
+
+const PLATFORM_COLORS: Record<string, { bg: string; text: string }> = {
+  פייסבוק:  { bg: "#E7F0FD", text: "#1877F2" },
+  facebook:  { bg: "#E7F0FD", text: "#1877F2" },
+  אינסטגרם: { bg: "#FDE9F4", text: "#D92E7F" },
+  instagram: { bg: "#FDE9F4", text: "#D92E7F" },
+  טיקטוק:   { bg: "#f0f0f0", text: "#010101" },
+  tiktok:    { bg: "#f0f0f0", text: "#010101" },
+  לינקדאין:  { bg: "#E8F0FA", text: "#0A66C2" },
+  linkedin:  { bg: "#E8F0FA", text: "#0A66C2" },
+  יוטיוב:   { bg: "#FFE8E8", text: "#CC0000" },
+  youtube:   { bg: "#FFE8E8", text: "#CC0000" },
+  טוויטר:   { bg: "#f0f0f0", text: "#000000" },
+  twitter:   { bg: "#f0f0f0", text: "#000000" },
+  x:         { bg: "#f0f0f0", text: "#000000" },
 };
 
 const STATUS_STYLE: Record<PostStatus, { label: string; cls: string }> = {
@@ -105,9 +136,9 @@ function ClientPostView({
   }, [post.id]);
 
   const isVideo = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
-  const platformIcon = post.platform
-    ? PLATFORM_ICON[post.platform.toLowerCase()] ?? "📱"
-    : null;
+  const platformKey = post.platform?.toLowerCase() ?? "";
+  const platformColor = PLATFORM_COLORS[post.platform ?? ""] ?? PLATFORM_COLORS[platformKey] ?? { bg: "#f3f4f6", text: "#6b7280" };
+  const hasPlatformIcon = post.platform && (PLATFORM_COLORS[post.platform] || PLATFORM_COLORS[platformKey]);
   const statusCfg = STATUS_STYLE[currentStatus];
 
   const hebDate = new Date(post.scheduled_date).toLocaleDateString("he-IL", {
@@ -208,9 +239,13 @@ function ClientPostView({
 
           {/* Platform + status + date */}
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            {platformIcon && (
-              <span className="flex items-center gap-1.5 rounded-full bg-[#ede9fe] px-3 py-1 text-xs font-semibold text-[#4c1d95]">
-                {platformIcon} {post.platform}
+            {post.platform && (
+              <span
+                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: platformColor.bg, color: platformColor.text }}
+              >
+                {hasPlatformIcon && <PlatformIcon platform={post.platform} size={14} />}
+                {post.platform}
               </span>
             )}
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.cls}`}>
