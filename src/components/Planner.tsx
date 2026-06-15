@@ -15,6 +15,7 @@ import { MonthView } from "@/components/calendar/MonthView";
 import { WeekView } from "@/components/calendar/WeekView";
 import { DayView } from "@/components/calendar/DayView";
 import { PostModal } from "@/components/PostModal";
+import { GanttModal } from "@/components/GanttModal";
 import { logout } from "@/app/login/actions";
 
 const WEEK_OPTS = { weekStartsOn: 0 as const };
@@ -58,6 +59,7 @@ export function Planner({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
+  const [ganttOpen, setGanttOpen] = useState(false);
 
   const clientsById = useMemo(
     () => new Map(clients.map((c) => [c.id, c])),
@@ -197,6 +199,16 @@ export function Planner({
           <span className="pointer-events-none absolute mt-8 ms-40 h-12 w-12 rounded-full bg-violet-400/10" />
           <span className="pointer-events-none absolute mt-32 ms-2 h-8 w-8 rounded-full bg-violet-300/10" />
 
+          {isAdmin && (
+            <button
+              onClick={() => setGanttOpen(true)}
+              className="w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-lg transition hover:opacity-90 active:scale-95"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
+            >
+              ✨ צור גאנט AI
+            </button>
+          )}
+
           <div>
             <h3 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">
               לקוחות
@@ -313,6 +325,15 @@ export function Planner({
           </div>
         </main>
       </div>
+
+      {ganttOpen && (
+        <GanttModal
+          clients={clients}
+          defaultClientId={clientFilter}
+          onClose={() => setGanttOpen(false)}
+          onDone={load}
+        />
+      )}
 
       {modalOpen && (
         <PostModal
