@@ -16,6 +16,7 @@ import { WeekView } from "@/components/calendar/WeekView";
 import { DayView } from "@/components/calendar/DayView";
 import { PostModal } from "@/components/PostModal";
 import { GanttModal } from "@/components/GanttModal";
+import { NotificationBell } from "@/components/NotificationBell";
 import { logout } from "@/app/login/actions";
 
 const WEEK_OPTS = { weekStartsOn: 0 as const };
@@ -182,6 +183,7 @@ export function Planner({
               </div>
             </div>
           </div>
+          <NotificationBell />
           <form action={logout}>
             <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
               יציאה

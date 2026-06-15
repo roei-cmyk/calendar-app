@@ -96,7 +96,9 @@ function ClientPostView({
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [busy, setBusy] = useState(false);
-  const [approved, setApproved] = useState(post.status === "approved");
+  const [currentStatus, setCurrentStatus] = useState<PostStatus>(post.status);
+  const [changeMode, setChangeMode] = useState(false);
+  const [changeText, setChangeText] = useState("");
 
   useEffect(() => {
     fetchComments(post.id).then(setComments).catch(() => {});
@@ -106,7 +108,7 @@ function ClientPostView({
   const platformIcon = post.platform
     ? PLATFORM_ICON[post.platform.toLowerCase()] ?? "📱"
     : null;
-  const statusCfg = STATUS_STYLE[post.status];
+  const statusCfg = STATUS_STYLE[currentStatus];
 
   const hebDate = new Date(post.scheduled_date).toLocaleDateString("he-IL", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -116,32 +118,57 @@ function ClientPostView({
     setBusy(true);
     try {
       await updatePost(post.id, { status: "approved" });
-      setApproved(true);
+      setCurrentStatus("approved");
       onChanged();
     } finally {
       setBusy(false);
     }
   }
 
-  async function sendComment() {
-    if (!newComment.trim()) return;
+  async function requestChanges() {
+    if (!changeText.trim()) return;
     setBusy(true);
     try {
-      const c = await addComment(post.id, profile.id, newComment.trim());
-      setComments(prev => [...prev, c]);
-      setNewComment("");
+      // Send comment via server route (triggers notification)
+      await sendCommentViaApi(`🔄 בקשת שינוי: ${changeText.trim()}`);
+      await updatePost(post.id, { status: "pending" });
+      setCurrentStatus("pending");
+      setChangeMode(false);
+      setChangeText("");
+      onChanged();
     } finally {
       setBusy(false);
     }
   }
 
+  async function sendCommentViaApi(text: string) {
+    const res = await fetch("/api/client-comment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: post.id, authorId: profile.id, body: text }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    setComments(prev => [...prev, data.comment]);
+  }
+
+  async function sendComment() {
+    if (!newComment.trim()) return;
+    setBusy(true);
+    try {
+      await sendCommentViaApi(newComment.trim());
+      setNewComment("");
+    } catch { /* ignore */ }
+    finally { setBusy(false); }
+  }
+
   return (
     <div
-      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="scroll-thin max-h-[92vh] w-full max-w-md animate-scale-in overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
+        className="scroll-thin max-h-[95vh] w-full max-w-md animate-scale-in overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
         onClick={e => e.stopPropagation()}
       >
         {/* Drag handle (mobile) */}
@@ -149,18 +176,18 @@ function ClientPostView({
           <div className="h-1 w-10 rounded-full bg-gray-200" />
         </div>
 
-        {/* Media */}
+        {/* Media — full image, no crop */}
         {post.media_url && (
-          <div className="relative bg-gray-900">
+          <div className="relative bg-gray-950">
             {isVideo ? (
-              <video src={post.media_url} controls className="max-h-72 w-full object-contain" />
+              <video src={post.media_url} controls className="w-full" />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={post.media_url} alt="" className="max-h-72 w-full object-cover" />
+              <img src={post.media_url} alt="" className="w-full" />
             )}
             <button
               onClick={onClose}
-              className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
+              className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
             >
               ×
             </button>
@@ -168,7 +195,6 @@ function ClientPostView({
         )}
 
         <div className="p-5">
-          {/* Close when no media */}
           {!post.media_url && (
             <div className="mb-3 flex justify-end">
               <button
@@ -180,7 +206,7 @@ function ClientPostView({
             </div>
           )}
 
-          {/* Platform + status */}
+          {/* Platform + status + date */}
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {platformIcon && (
               <span className="flex items-center gap-1.5 rounded-full bg-[#ede9fe] px-3 py-1 text-xs font-semibold text-[#4c1d95]">
@@ -203,25 +229,70 @@ function ClientPostView({
 
           {/* Body */}
           {post.body && (
-            <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
+            <p className="mb-5 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
               {post.body}
             </p>
           )}
 
-          {/* Approve button */}
-          {post.status === "pending" && !approved && (
-            <button
-              onClick={approve}
-              disabled={busy}
-              className="mb-4 w-full rounded-2xl py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
-            >
-              {busy ? "מאשר…" : "✓ אישור פוסט"}
-            </button>
+          {/* Status actions */}
+          {currentStatus === "pending" && !changeMode && (
+            <div className="mb-5 flex gap-2">
+              <button
+                onClick={approve}
+                disabled={busy}
+                className="flex-1 rounded-2xl py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}
+              >
+                {busy ? "…" : "✓ אישור פוסט"}
+              </button>
+              <button
+                onClick={() => setChangeMode(true)}
+                disabled={busy}
+                className="flex-1 rounded-2xl border border-amber-300 bg-amber-50 py-3 text-sm font-bold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50"
+              >
+                ✏️ בקשת שינוי
+              </button>
+            </div>
           )}
-          {approved && post.status === "pending" && (
-            <div className="mb-4 rounded-2xl bg-emerald-50 py-3 text-center text-sm font-semibold text-emerald-700">
-              ✓ הפוסט אושר!
+
+          {currentStatus === "approved" && (
+            <div className="mb-5 flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3">
+              <span className="text-sm font-semibold text-emerald-700">✓ הפוסט מאושר</span>
+              <button
+                onClick={() => setChangeMode(true)}
+                className="text-xs text-amber-600 hover:underline"
+              >
+                בקשת שינוי
+              </button>
+            </div>
+          )}
+
+          {/* Request changes form */}
+          {changeMode && (
+            <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <p className="mb-2 text-sm font-semibold text-amber-800">מה צריך לשנות?</p>
+              <textarea
+                className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-300"
+                rows={3}
+                placeholder="תאר מה אתה רוצה לשנות…"
+                value={changeText}
+                onChange={e => setChangeText(e.target.value)}
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={requestChanges}
+                  disabled={busy || !changeText.trim()}
+                  className="flex-1 rounded-xl bg-amber-500 py-2 text-sm font-bold text-white transition hover:bg-amber-600 disabled:opacity-50"
+                >
+                  {busy ? "שולח…" : "שלח בקשה"}
+                </button>
+                <button
+                  onClick={() => { setChangeMode(false); setChangeText(""); }}
+                  className="rounded-xl border border-amber-200 px-4 py-2 text-sm text-amber-700 hover:bg-amber-100"
+                >
+                  ביטול
+                </button>
+              </div>
             </div>
           )}
 
@@ -232,7 +303,7 @@ function ClientPostView({
             </h4>
             <div className="mb-3 space-y-2">
               {comments.length === 0 && (
-                <p className="text-xs text-gray-400">אין הערות עדיין — כתוב הערה למטה</p>
+                <p className="text-xs text-gray-400">אין הערות עדיין</p>
               )}
               {comments.map(c => (
                 <div key={c.id} className="rounded-2xl bg-[#f5f3ff] px-4 py-2.5 text-sm text-gray-700">
