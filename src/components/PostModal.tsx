@@ -513,7 +513,28 @@ function AdminPostForm({
           </div>
 
           <Field label="פלטפורמה">
-            <input className={inputCls} value={form.platform ?? ""} placeholder="אינסטגרם / פייסבוק / טיקטוק" onChange={e => update("platform", e.target.value)} />
+            <div className="flex flex-wrap gap-2 pt-0.5">
+              {["פייסבוק", "אינסטגרם", "טיקטוק", "לינקדאין", "טוויטר"].map(p => {
+                const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
+                const selected = form.platform === p;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => update("platform", selected ? "" : p)}
+                    className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition"
+                    style={{
+                      backgroundColor: selected ? color.bg : "transparent",
+                      color: selected ? color.text : "#6b7280",
+                      borderColor: selected ? color.text + "55" : "#e5e7eb",
+                    }}
+                  >
+                    <PlatformIcon platform={p} size={14} />
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
           </Field>
 
           <Field label="תמונה / סרטון">
