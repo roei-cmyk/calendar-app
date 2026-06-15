@@ -12,15 +12,24 @@ import {
   type PostInput,
 } from "@/lib/posts";
 
-const STATUSES: PostStatus[] = [
-  "draft",
-  "pending",
-  "approved",
-  "scheduled",
-  "published",
-];
-
+const STATUSES: PostStatus[] = ["draft", "pending", "approved", "scheduled", "published"];
 const inputCls = "input";
+
+const PLATFORM_ICON: Record<string, string> = {
+  פייסבוק: "📘", facebook: "📘",
+  אינסטגרם: "📸", instagram: "📸",
+  טיקטוק: "🎵", tiktok: "🎵",
+  לינקדאין: "💼", linkedin: "💼",
+  יוטיוב: "▶️", youtube: "▶️",
+};
+
+const STATUS_STYLE: Record<PostStatus, { label: string; cls: string }> = {
+  draft:     { label: "טיוטה",        cls: "bg-gray-100 text-gray-500" },
+  pending:   { label: "ממתין לאישור", cls: "bg-amber-100 text-amber-700" },
+  approved:  { label: "✓ מאושר",      cls: "bg-emerald-100 text-emerald-700" },
+  scheduled: { label: "מתוזמן",       cls: "bg-sky-100 text-sky-700" },
+  published: { label: "פורסם",        cls: "bg-violet-100 text-violet-700" },
+};
 
 export function PostModal({
   post,
@@ -42,6 +51,244 @@ export function PostModal({
   onChanged: () => void;
 }) {
   const isNew = !post;
+
+  // ── client read-only view ──────────────────────────────────────────────────
+  if (!canEdit && post) {
+    return (
+      <ClientPostView
+        post={post}
+        profile={profile}
+        onClose={onClose}
+        onChanged={onChanged}
+      />
+    );
+  }
+
+  // ── admin edit / create view ───────────────────────────────────────────────
+  return (
+    <AdminPostForm
+      post={post}
+      isNew={isNew}
+      defaultDate={defaultDate}
+      defaultClientId={defaultClientId}
+      clients={clients}
+      profile={profile}
+      onClose={onClose}
+      onChanged={onChanged}
+    />
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Client view — looks like a real social-media post
+// ─────────────────────────────────────────────────────────────────────────────
+function ClientPostView({
+  post,
+  profile,
+  onClose,
+  onChanged,
+}: {
+  post: Post;
+  profile: Profile;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [approved, setApproved] = useState(post.status === "approved");
+
+  useEffect(() => {
+    fetchComments(post.id).then(setComments).catch(() => {});
+  }, [post.id]);
+
+  const isVideo = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
+  const platformIcon = post.platform
+    ? PLATFORM_ICON[post.platform.toLowerCase()] ?? "📱"
+    : null;
+  const statusCfg = STATUS_STYLE[post.status];
+
+  const hebDate = new Date(post.scheduled_date).toLocaleDateString("he-IL", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+
+  async function approve() {
+    setBusy(true);
+    try {
+      await updatePost(post.id, { status: "approved" });
+      setApproved(true);
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendComment() {
+    if (!newComment.trim()) return;
+    setBusy(true);
+    try {
+      const c = await addComment(post.id, profile.id, newComment.trim());
+      setComments(prev => [...prev, c]);
+      setNewComment("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        className="scroll-thin max-h-[92vh] w-full max-w-md animate-scale-in overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle (mobile) */}
+        <div className="flex justify-center pt-3 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-gray-200" />
+        </div>
+
+        {/* Media */}
+        {post.media_url && (
+          <div className="relative bg-gray-900">
+            {isVideo ? (
+              <video src={post.media_url} controls className="max-h-72 w-full object-contain" />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.media_url} alt="" className="max-h-72 w-full object-cover" />
+            )}
+            <button
+              onClick={onClose}
+              className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        <div className="p-5">
+          {/* Close when no media */}
+          {!post.media_url && (
+            <div className="mb-3 flex justify-end">
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Platform + status */}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {platformIcon && (
+              <span className="flex items-center gap-1.5 rounded-full bg-[#ede9fe] px-3 py-1 text-xs font-semibold text-[#4c1d95]">
+                {platformIcon} {post.platform}
+              </span>
+            )}
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.cls}`}>
+              {statusCfg.label}
+            </span>
+            <span className="ms-auto text-xs text-gray-400">
+              {hebDate}
+              {post.scheduled_time && (
+                <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>
+              )}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h2 className="mb-2 text-lg font-bold text-[#1e1b4b]">{post.title}</h2>
+
+          {/* Body */}
+          {post.body && (
+            <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
+              {post.body}
+            </p>
+          )}
+
+          {/* Approve button */}
+          {post.status === "pending" && !approved && (
+            <button
+              onClick={approve}
+              disabled={busy}
+              className="mb-4 w-full rounded-2xl py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
+            >
+              {busy ? "מאשר…" : "✓ אישור פוסט"}
+            </button>
+          )}
+          {approved && post.status === "pending" && (
+            <div className="mb-4 rounded-2xl bg-emerald-50 py-3 text-center text-sm font-semibold text-emerald-700">
+              ✓ הפוסט אושר!
+            </div>
+          )}
+
+          {/* Comments */}
+          <div className="border-t border-[#f3f0ff] pt-4">
+            <h4 className="mb-3 text-sm font-bold text-[#1e1b4b]">
+              הערות {comments.length > 0 && `(${comments.length})`}
+            </h4>
+            <div className="mb-3 space-y-2">
+              {comments.length === 0 && (
+                <p className="text-xs text-gray-400">אין הערות עדיין — כתוב הערה למטה</p>
+              )}
+              {comments.map(c => (
+                <div key={c.id} className="rounded-2xl bg-[#f5f3ff] px-4 py-2.5 text-sm text-gray-700">
+                  {c.body}
+                  <span className="mt-1 block text-[10px] text-gray-400" dir="ltr">
+                    {new Date(c.created_at).toLocaleString("he-IL")}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                className="flex-1 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-4 py-2 text-sm outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/15"
+                placeholder="כתוב הערה…"
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && sendComment()}
+              />
+              <button
+                onClick={sendComment}
+                disabled={busy || !newComment.trim()}
+                className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
+              >
+                שלח
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin form — unchanged edit / create view
+// ─────────────────────────────────────────────────────────────────────────────
+function AdminPostForm({
+  post,
+  isNew,
+  defaultDate,
+  defaultClientId,
+  clients,
+  profile,
+  onClose,
+  onChanged,
+}: {
+  post: Post | null;
+  isNew: boolean;
+  defaultDate: string;
+  defaultClientId: string | null;
+  clients: Client[];
+  profile: Profile;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
   const [form, setForm] = useState<PostInput>({
     client_id: post?.client_id ?? defaultClientId ?? clients[0]?.id ?? "",
     title: post?.title ?? "",
@@ -55,8 +302,6 @@ export function PostModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-
-  // Comments
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [commentBusy, setCommentBusy] = useState(false);
@@ -66,7 +311,7 @@ export function PostModal({
   }, [post]);
 
   function update<K extends keyof PostInput>(key: K, value: PostInput[K]) {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm(f => ({ ...f, [key]: value }));
   }
 
   async function handleSave() {
@@ -75,11 +320,8 @@ export function PostModal({
     if (!form.client_id) return setError("יש לבחור לקוח");
     setSaving(true);
     try {
-      if (isNew) {
-        await createPost(form, profile.id);
-      } else {
-        await updatePost(post!.id, form);
-      }
+      if (isNew) await createPost(form, profile.id);
+      else await updatePost(post!.id, form);
       onChanged();
       onClose();
     } catch (e) {
@@ -90,8 +332,7 @@ export function PostModal({
   }
 
   async function handleDelete() {
-    if (!post) return;
-    if (!confirm("למחוק את הפוסט?")) return;
+    if (!post || !confirm("למחוק את הפוסט?")) return;
     setSaving(true);
     try {
       await deletePost(post.id);
@@ -128,13 +369,10 @@ export function PostModal({
     setCommentBusy(true);
     try {
       const c = await addComment(post.id, profile.id, newComment.trim());
-      setComments((prev) => [...prev, c]);
+      setComments(prev => [...prev, c]);
       setNewComment("");
-    } catch {
-      // ignore
-    } finally {
-      setCommentBusy(false);
-    }
+    } catch { /* ignore */ }
+    finally { setCommentBusy(false); }
   }
 
   return (
@@ -144,11 +382,11 @@ export function PostModal({
     >
       <div
         className="scroll-thin max-h-[90vh] w-full max-w-lg animate-scale-in overflow-y-auto rounded-2xl border border-line bg-white shadow-modal"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-white/95 px-5 py-3.5 backdrop-blur">
           <h3 className="font-bold tracking-tight text-ink">
-            {isNew ? "פוסט חדש" : canEdit ? "עריכת פוסט" : "פרטי פוסט"}
+            {isNew ? "פוסט חדש" : "עריכת פוסט"}
           </h3>
           <button
             onClick={onClose}
@@ -165,120 +403,53 @@ export function PostModal({
             </div>
           )}
 
-          {/* Title */}
           <Field label="כותרת">
-            <input
-              className={inputCls}
-              value={form.title}
-              disabled={!canEdit}
-              onChange={(e) => update("title", e.target.value)}
-            />
+            <input className={inputCls} value={form.title} onChange={e => update("title", e.target.value)} />
           </Field>
 
-          {/* Client + status */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="לקוח">
-              <select
-                className={inputCls}
-                value={form.client_id}
-                disabled={!canEdit}
-                onChange={(e) => update("client_id", e.target.value)}
-              >
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
+              <select className={inputCls} value={form.client_id} onChange={e => update("client_id", e.target.value)}>
+                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
             <Field label="סטטוס">
-              <select
-                className={inputCls}
-                value={form.status}
-                disabled={!canEdit}
-                onChange={(e) => update("status", e.target.value as PostStatus)}
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {POST_STATUS_LABELS[s]}
-                  </option>
-                ))}
+              <select className={inputCls} value={form.status} onChange={e => update("status", e.target.value as PostStatus)}>
+                {STATUSES.map(s => <option key={s} value={s}>{POST_STATUS_LABELS[s]}</option>)}
               </select>
             </Field>
           </div>
 
-          {/* Date + time */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="תאריך">
-              <input
-                type="date"
-                dir="ltr"
-                className={inputCls}
-                value={form.scheduled_date}
-                disabled={!canEdit}
-                onChange={(e) => update("scheduled_date", e.target.value)}
-              />
+              <input type="date" dir="ltr" className={inputCls} value={form.scheduled_date} onChange={e => update("scheduled_date", e.target.value)} />
             </Field>
             <Field label="שעה">
-              <input
-                type="time"
-                dir="ltr"
-                className={inputCls}
-                value={form.scheduled_time ?? ""}
-                disabled={!canEdit}
-                onChange={(e) => update("scheduled_time", e.target.value || null)}
-              />
+              <input type="time" dir="ltr" className={inputCls} value={form.scheduled_time ?? ""} onChange={e => update("scheduled_time", e.target.value || null)} />
             </Field>
           </div>
 
-          {/* Platform */}
           <Field label="פלטפורמה">
-            <input
-              className={inputCls}
-              value={form.platform ?? ""}
-              disabled={!canEdit}
-              placeholder="אינסטגרם / פייסבוק / טיקטוק"
-              onChange={(e) => update("platform", e.target.value)}
-            />
+            <input className={inputCls} value={form.platform ?? ""} placeholder="אינסטגרם / פייסבוק / טיקטוק" onChange={e => update("platform", e.target.value)} />
           </Field>
 
-          {/* Media upload */}
           <Field label="תמונה / סרטון">
             {form.media_url ? (
               <div className="relative overflow-hidden rounded-xl border border-line bg-gray-50">
                 {/\.(mp4|mov|avi|webm|mkv)$/i.test(form.media_url) ? (
-                  <video
-                    src={form.media_url}
-                    controls
-                    className="max-h-52 w-full object-contain"
-                  />
+                  <video src={form.media_url} controls className="max-h-52 w-full object-contain" />
                 ) : (
-                  <img
-                    src={form.media_url}
-                    alt="תצוגה מקדימה"
-                    className="max-h-52 w-full object-contain"
-                  />
+                  <img src={form.media_url} alt="תצוגה מקדימה" className="max-h-52 w-full object-contain" />
                 )}
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => update("media_url", "")}
-                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-sm text-white transition hover:bg-black/70"
-                    title="הסר קובץ"
-                  >
-                    ×
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => update("media_url", "")}
+                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-sm text-white hover:bg-black/70"
+                >×</button>
               </div>
-            ) : canEdit ? (
+            ) : (
               <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-canvas p-6 transition hover:border-brand/50 hover:bg-brand-lighter/20">
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*,video/*"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                />
+                <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} disabled={uploading} />
                 {uploading ? (
                   <>
                     <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
@@ -287,98 +458,53 @@ export function PostModal({
                 ) : (
                   <>
                     <span className="text-3xl">🖼️</span>
-                    <span className="text-sm font-medium text-ink-muted group-hover:text-brand">
-                      לחץ לבחירת קובץ
-                    </span>
+                    <span className="text-sm font-medium text-ink-muted group-hover:text-brand">לחץ לבחירת קובץ</span>
                     <span className="text-xs text-ink-faint">תמונות וסרטונים עד 50MB</span>
                   </>
                 )}
               </label>
-            ) : form.media_url === "" || form.media_url === null ? (
-              <p className="text-sm text-ink-faint">אין מדיה</p>
-            ) : null}
+            )}
           </Field>
 
-          {/* Body */}
           <Field label="תוכן">
-            <textarea
-              className={`${inputCls} min-h-[96px] resize-y`}
-              value={form.body ?? ""}
-              disabled={!canEdit}
-              onChange={(e) => update("body", e.target.value)}
-            />
+            <textarea className={`${inputCls} min-h-[96px] resize-y`} value={form.body ?? ""} onChange={e => update("body", e.target.value)} />
           </Field>
 
-          {/* Comments (only for existing posts) */}
           {!isNew && (
             <div className="border-t border-line pt-4">
-              <h4 className="mb-2.5 text-sm font-semibold text-ink">
-                תגובות ({comments.length})
-              </h4>
+              <h4 className="mb-2.5 text-sm font-semibold text-ink">תגובות ({comments.length})</h4>
               <div className="mb-3 space-y-2">
-                {comments.length === 0 && (
-                  <p className="text-xs text-ink-faint">אין תגובות עדיין</p>
-                )}
-                {comments.map((c) => (
-                  <div
-                    key={c.id}
-                    className="rounded-lg border border-line bg-gray-50 px-3 py-2 text-sm"
-                  >
+                {comments.length === 0 && <p className="text-xs text-ink-faint">אין תגובות עדיין</p>}
+                {comments.map(c => (
+                  <div key={c.id} className="rounded-lg border border-line bg-gray-50 px-3 py-2 text-sm">
                     <p className="text-ink">{c.body}</p>
-                    <p className="mt-1 text-[10px] text-ink-faint" dir="ltr">
-                      {new Date(c.created_at).toLocaleString("he-IL")}
-                    </p>
+                    <p className="mt-1 text-[10px] text-ink-faint" dir="ltr">{new Date(c.created_at).toLocaleString("he-IL")}</p>
                   </div>
                 ))}
               </div>
               <div className="flex gap-2">
-                <input
-                  className={inputCls}
-                  placeholder="הוספת תגובה…"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
-                />
-                <button
-                  onClick={handleAddComment}
-                  disabled={commentBusy || !newComment.trim()}
-                  className="btn-primary shrink-0"
-                >
-                  שליחה
-                </button>
+                <input className={inputCls} placeholder="הוספת תגובה…" value={newComment} onChange={e => setNewComment(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAddComment()} />
+                <button onClick={handleAddComment} disabled={commentBusy || !newComment.trim()} className="btn-primary shrink-0">שליחה</button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        {canEdit && (
-          <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur">
-            <div>
-              {!isNew && (
-                <button
-                  onClick={handleDelete}
-                  disabled={saving}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
-                >
-                  מחיקה
-                </button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <button onClick={onClose} className="btn-ghost">
-                ביטול
+        <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur">
+          <div>
+            {!isNew && (
+              <button onClick={handleDelete} disabled={saving} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
+                מחיקה
               </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn-primary"
-              >
-                {saving ? "שומר…" : "שמירה"}
-              </button>
-            </div>
+            )}
           </div>
-        )}
+          <div className="flex gap-2">
+            <button onClick={onClose} className="btn-ghost">ביטול</button>
+            <button onClick={handleSave} disabled={saving} className="btn-primary">
+              {saving ? "שומר…" : "שמירה"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -387,9 +513,7 @@ export function PostModal({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-ink-muted">
-        {label}
-      </span>
+      <span className="mb-1.5 block text-xs font-medium text-ink-muted">{label}</span>
       {children}
     </label>
   );
