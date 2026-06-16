@@ -220,37 +220,47 @@ export function Planner({
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — dark purple */}
+        {/* Sidebar */}
         <aside
           className="hidden w-60 shrink-0 flex-col gap-4 p-4 md:flex"
-          style={{ background: "linear-gradient(180deg, #2e1065 0%, #1e1b4b 100%)" }}
+          style={{
+            background: "rgba(7,4,18,0.97)",
+            borderRight: "0.5px solid rgba(167,139,250,0.12)",
+          }}
         >
-          <span className="pointer-events-none absolute mt-8 ms-40 h-12 w-12 rounded-full bg-violet-400/10" />
-          <span className="pointer-events-none absolute mt-32 ms-2 h-8 w-8 rounded-full bg-violet-300/10" />
-
           {isAdmin && (
             <button
               onClick={() => setGanttOpen(true)}
-              className="w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-lg transition hover:opacity-90 active:scale-95"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
+              className="w-full rounded-xl py-2.5 text-sm font-bold text-white transition active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, #4c1d95, #7c3aed)",
+                boxShadow: "0 4px 16px rgba(124,58,237,0.35)",
+              }}
             >
               ✨ צור גאנט AI
             </button>
           )}
 
           <div>
-            <h3 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">
+            <h3
+              className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.15em]"
+              style={{ color: "rgba(167,139,250,0.35)" }}
+            >
               לקוחות
             </h3>
             <div className="flex flex-col gap-0.5">
               {isAdmin && (
                 <button
                   onClick={() => handleClientFilter(null)}
-                  className={`rounded-lg px-3 py-2 text-right text-sm transition ${
-                    clientFilter === null
-                      ? "bg-white/15 font-semibold text-white shadow-sm"
-                      : "text-white/50 hover:bg-white/[0.08] hover:text-white/80"
-                  }`}
+                  className="rounded-lg px-3 py-2 text-right text-sm transition"
+                  style={clientFilter === null ? {
+                    background: "rgba(124,58,237,0.2)",
+                    color: "#e9d5ff",
+                    fontWeight: 600,
+                    boxShadow: "inset 0 0 0 0.5px rgba(167,139,250,0.3)",
+                  } : {
+                    color: "rgba(167,139,250,0.45)",
+                  }}
                 >
                   כל הלקוחות
                 </button>
@@ -261,15 +271,22 @@ export function Planner({
                   <button
                     key={c.id}
                     onClick={() => handleClientFilter(c.id)}
-                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition ${
-                      active
-                        ? "bg-white/15 font-semibold text-white"
-                        : "text-white/50 hover:bg-white/[0.08] hover:text-white/80"
-                    }`}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition"
+                    style={active ? {
+                      background: "rgba(124,58,237,0.2)",
+                      color: "#e9d5ff",
+                      fontWeight: 600,
+                      boxShadow: "inset 0 0 0 0.5px rgba(167,139,250,0.3)",
+                    } : {
+                      color: "rgba(167,139,250,0.45)",
+                    }}
                   >
                     <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full shadow-sm"
-                      style={{ backgroundColor: c.color }}
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{
+                        backgroundColor: c.color,
+                        boxShadow: active ? `0 0 6px ${c.color}` : undefined,
+                      }}
                     />
                     <span className="truncate">{c.name}</span>
                   </button>
@@ -278,15 +295,20 @@ export function Planner({
             </div>
           </div>
 
-          {/* Preview-as-client toggle — shown when a specific client is selected */}
+          {/* Preview-as-client toggle */}
           {isAdmin && clientFilter && (
             <button
               onClick={() => setPreviewAsClient(v => !v)}
-              className={`mt-auto w-full rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
-                previewAsClient
-                  ? "border-amber-400/60 bg-amber-400/20 text-amber-200 hover:bg-amber-400/30"
-                  : "border-white/15 bg-white/8 text-white/60 hover:bg-white/15 hover:text-white"
-              }`}
+              className="mt-auto w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
+              style={previewAsClient ? {
+                background: "rgba(251,191,36,0.12)",
+                border: "0.5px solid rgba(251,191,36,0.35)",
+                color: "rgba(253,230,138,0.9)",
+              } : {
+                background: "rgba(255,255,255,0.04)",
+                border: "0.5px solid rgba(167,139,250,0.2)",
+                color: "rgba(167,139,250,0.55)",
+              }}
             >
               {previewAsClient ? "✏️ חזרה למצב עריכה" : `👁 תצוגת ${activeClient?.name ?? "לקוח"}`}
             </button>
