@@ -296,33 +296,47 @@ export function Planner({
         {/* Main */}
         <main className="flex flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white px-4 py-2.5 shadow-sm">
+          <div
+            className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5"
+            style={{
+              background: "rgba(15,5,32,0.85)",
+              borderColor: "rgba(167,139,250,0.2)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
-                className="rounded-full px-2.5 py-1.5 text-brand transition hover:bg-brand-lighter"
+                className="rounded-full px-2.5 py-1.5 transition"
+                style={{ color: "#a78bfa" }}
                 aria-label="הקודם"
               >
                 ›
               </button>
               <button
                 onClick={() => setCurrent(new Date())}
-                className="rounded-full border border-brand/30 bg-brand-lighter px-3.5 py-1.5 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
+                className="rounded-full border px-3.5 py-1.5 text-sm font-semibold transition"
+                style={{
+                  borderColor: "rgba(167,139,250,0.4)",
+                  background: "rgba(124,58,237,0.2)",
+                  color: "#c4b5fd",
+                }}
               >
                 היום
               </button>
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
-                className="rounded-full px-2.5 py-1.5 text-brand transition hover:bg-brand-lighter"
+                className="rounded-full px-2.5 py-1.5 transition"
+                style={{ color: "#a78bfa" }}
                 aria-label="הבא"
               >
                 ‹
               </button>
-              <span className="ms-2.5 text-sm font-bold tracking-tight text-ink">
+              <span className="ms-2.5 text-sm font-bold tracking-tight" style={{ color: "#e9d5ff" }}>
                 {rangeLabel}
               </span>
               {loading && (
-                <span className="ms-2 text-xs text-brand-light">טוען…</span>
+                <span className="ms-2 text-xs" style={{ color: "#a78bfa" }}>טוען…</span>
               )}
             </div>
 
@@ -332,7 +346,12 @@ export function Planner({
                 onChange={(e) =>
                   setStatusFilter(e.target.value as PostStatus | "all")
                 }
-                className="rounded-full border border-line-strong bg-white px-3 py-1.5 text-sm text-ink outline-none transition hover:border-brand/40 focus:border-brand focus:ring-2 focus:ring-brand/15"
+                className="rounded-full border px-3 py-1.5 text-sm outline-none transition"
+                style={{
+                  borderColor: "rgba(167,139,250,0.3)",
+                  background: "rgba(124,58,237,0.15)",
+                  color: "#c4b5fd",
+                }}
               >
                 <option value="all">כל הסטטוסים</option>
                 {(Object.keys(POST_STATUS_LABELS) as PostStatus[]).map((s) => (
@@ -347,11 +366,16 @@ export function Planner({
                   <button
                     key={v}
                     onClick={() => setView(v)}
-                    className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-                      view === v
-                        ? "border-brand bg-brand text-white shadow-sm"
-                        : "border-line-strong bg-white text-ink-muted hover:border-brand/30 hover:bg-brand-lighter hover:text-brand"
-                    }`}
+                    className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
+                    style={view === v ? {
+                      background: "#7c3aed",
+                      borderColor: "#7c3aed",
+                      color: "white",
+                    } : {
+                      borderColor: "rgba(167,139,250,0.3)",
+                      background: "transparent",
+                      color: "#a78bfa",
+                    }}
                   >
                     {VIEW_LABELS[v]}
                   </button>
@@ -361,7 +385,7 @@ export function Planner({
           </div>
 
           {/* Calendar surface */}
-          <div className="flex-1 overflow-hidden bg-canvas">
+          <div className="flex-1 overflow-hidden" style={{ background: "#0f0520" }}>
             {view === "month" && <MonthView {...viewProps} />}
             {view === "week" && <WeekView {...viewProps} />}
             {view === "day" && <DayView {...viewProps} />}

@@ -29,7 +29,7 @@ function PlatformIcon({ platform, size = 20 }: { platform: string; size?: number
     <svg width={size} height={size} viewBox="0 0 24 24" aria-label="אינסטגרם"><defs><linearGradient id="ig" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#FED373"/><stop offset="25%" stopColor="#F15245"/><stop offset="50%" stopColor="#D92E7F"/><stop offset="75%" stopColor="#9B36B7"/><stop offset="100%" stopColor="#515ECF"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig)"/><rect x="2.5" y="2.5" width="19" height="19" rx="4.5" fill="none" stroke="white" strokeWidth="1.5"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="white" strokeWidth="1.5"/><circle cx="17.5" cy="6.5" r="1" fill="white"/></svg>
   );
   if (key === "טיקטוק" || key === "tiktok") return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-label="טיקטוק"><rect width="24" height="24" rx="6" fill="#010101"/><path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5 2.592 2.592 0 0 1-2.59-2.5 2.592 2.592 0 0 1 2.59-2.5c.28 0 .54.04.79.1V9.78a5.66 5.66 0 0 0-.79-.05 5.65 5.65 0 0 0-5.65 5.65 5.65 5.65 0 0 0 5.65 5.65 5.65 5.65 0 0 0 5.65-5.65V8.37a7.32 7.32 0 0 0 4.26 1.35V6.66s-2.12.05-3.16-0.84z" fill="white"/><path d="M15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5 2.592 2.592 0 0 1-2.59-2.5 2.592 2.592 0 0 1 2.59-2.5c.28 0 .54.04.79.1V9.78a5.66 5.66 0 0 0-.79-.05 5.65 5.65 0 0 0-5.65 5.65 5.65 5.65 0 0 0 5.65 5.65 5.65 5.65 0 0 0 5.65-5.65V8.37a7.32 7.32 0 0 0 4.26 1.35V6.66S17.4 6.35 16.6 5.82A4.278 4.278 0 0 1 15.54 3z" fill="#69C9D0" opacity="0.6"/></svg>
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-label="טיקטוק"><rect width="24" height="24" rx="6" fill="#010101"/><path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5 2.592 2.592 0 0 1-2.59-2.5 2.592 2.592 0 0 1 2.59-2.5c.28 0 .54.04.79.1V9.78a5.66 5.66 0 0 0-.79-.05 5.65 5.65 0 0 0-5.65 5.65 5.65 5.65 0 0 0 5.65 5.65 5.65 5.65 0 0 0 5.65-5.65V8.37a7.32 7.32 0 0 0 4.26 1.35V6.66s-2.12.05-3.16-0.84z" fill="white"/></svg>
   );
   if (key === "לינקדאין" || key === "linkedin") return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="#0A66C2" aria-label="לינקדאין"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
@@ -48,25 +48,28 @@ const PLATFORM_COLORS: Record<string, { bg: string; text: string }> = {
   facebook:  { bg: "#E7F0FD", text: "#1877F2" },
   אינסטגרם: { bg: "#FDE9F4", text: "#D92E7F" },
   instagram: { bg: "#FDE9F4", text: "#D92E7F" },
-  טיקטוק:   { bg: "#f0f0f0", text: "#010101" },
-  tiktok:    { bg: "#f0f0f0", text: "#010101" },
-  לינקדאין:  { bg: "#E8F0FA", text: "#0A66C2" },
-  linkedin:  { bg: "#E8F0FA", text: "#0A66C2" },
-  יוטיוב:   { bg: "#FFE8E8", text: "#CC0000" },
-  youtube:   { bg: "#FFE8E8", text: "#CC0000" },
-  טוויטר:   { bg: "#f0f0f0", text: "#000000" },
-  twitter:   { bg: "#f0f0f0", text: "#000000" },
-  x:         { bg: "#f0f0f0", text: "#000000" },
+  טיקטוק:   { bg: "#E8F8F8", text: "#010101" },
+  tiktok:    { bg: "#E8F8F8", text: "#010101" },
+  לינקדאין:  { bg: "#E8F2FB", text: "#0A66C2" },
+  linkedin:  { bg: "#E8F2FB", text: "#0A66C2" },
+  יוטיוב:   { bg: "#FDECEA", text: "#FF0000" },
+  youtube:   { bg: "#FDECEA", text: "#FF0000" },
+  טוויטר:   { bg: "#E7F5FE", text: "#000000" },
+  twitter:   { bg: "#E7F5FE", text: "#000000" },
+  x:         { bg: "#E7F5FE", text: "#000000" },
 };
 
-const STATUS_STYLE: Record<PostStatus, { label: string; cls: string }> = {
-  draft:     { label: "טיוטה",        cls: "bg-gray-100 text-gray-500" },
-  pending:   { label: "ממתין לאישור", cls: "bg-amber-100 text-amber-700" },
-  approved:  { label: "✓ מאושר",      cls: "bg-emerald-100 text-emerald-700" },
-  scheduled: { label: "מתוזמן",       cls: "bg-sky-100 text-sky-700" },
-  published: { label: "פורסם",        cls: "bg-violet-100 text-violet-700" },
+const STATUS_CHIP: Record<PostStatus, { cls: string; style?: React.CSSProperties }> = {
+  draft:     { cls: "text-[#4B4869]",  style: { background: "#F1F0F5" } },
+  pending:   { cls: "text-[#5B21B6]",  style: { background: "#EDE9FE" } },
+  approved:  { cls: "text-[#a5b4fc]",  style: { background: "#1e1b4b" } },
+  scheduled: { cls: "text-[#7C3AED]",  style: { background: "#F5F3FF" } },
+  published: { cls: "text-white",       style: { background: "linear-gradient(135deg,#4c1d95,#7c3aed)" } },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Main export
+// ─────────────────────────────────────────────────────────────────────────────
 export function PostModal({
   post,
   defaultDate,
@@ -86,29 +89,15 @@ export function PostModal({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const isNew = !post;
-
-  // ── client read-only view ──────────────────────────────────────────────────
-  if (!canEdit && post) {
-    return (
-      <ClientPostView
-        post={post}
-        profile={profile}
-        onClose={onClose}
-        onChanged={onChanged}
-      />
-    );
-  }
-
-  // ── admin edit / create view ───────────────────────────────────────────────
   return (
-    <AdminPostForm
+    <PostForm
       post={post}
-      isNew={isNew}
+      isNew={!post}
       defaultDate={defaultDate}
       defaultClientId={defaultClientId}
       clients={clients}
       profile={profile}
+      canEdit={canEdit}
       onClose={onClose}
       onChanged={onChanged}
     />
@@ -116,271 +105,16 @@ export function PostModal({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Client view — looks like a real social-media post
+// Unified post form — same design for admin (editable) and client (read-only)
 // ─────────────────────────────────────────────────────────────────────────────
-function ClientPostView({
-  post,
-  profile,
-  onClose,
-  onChanged,
-}: {
-  post: Post;
-  profile: Profile;
-  onClose: () => void;
-  onChanged: () => void;
-}) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<PostStatus>(post.status);
-  const [changeMode, setChangeMode] = useState(false);
-  const [changeText, setChangeText] = useState("");
-
-  useEffect(() => {
-    fetchComments(post.id).then(setComments).catch(() => {});
-  }, [post.id]);
-
-  const isVideo = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
-  const platforms = parsePlatforms(post.platform);
-  const statusCfg = STATUS_STYLE[currentStatus];
-
-  const hebDate = new Date(post.scheduled_date).toLocaleDateString("he-IL", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
-
-  async function approve() {
-    setBusy(true);
-    try {
-      await updatePost(post.id, { status: "approved" });
-      setCurrentStatus("approved");
-      onChanged();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function requestChanges() {
-    if (!changeText.trim()) return;
-    setBusy(true);
-    try {
-      // Send comment via server route (triggers notification)
-      await sendCommentViaApi(`🔄 בקשת שינוי: ${changeText.trim()}`);
-      await updatePost(post.id, { status: "pending" });
-      setCurrentStatus("pending");
-      setChangeMode(false);
-      setChangeText("");
-      onChanged();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function sendCommentViaApi(text: string) {
-    const res = await fetch("/api/client-comment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId: post.id, authorId: profile.id, body: text }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    setComments(prev => [...prev, data.comment]);
-  }
-
-  async function sendComment() {
-    if (!newComment.trim()) return;
-    setBusy(true);
-    try {
-      await sendCommentViaApi(newComment.trim());
-      setNewComment("");
-    } catch { /* ignore */ }
-    finally { setBusy(false); }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
-    >
-      <div
-        className="scroll-thin max-h-[95vh] w-full max-w-md animate-scale-in overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Drag handle (mobile) */}
-        <div className="flex justify-center pt-3 sm:hidden">
-          <div className="h-1 w-10 rounded-full bg-gray-200" />
-        </div>
-
-        {/* Media — full image, no crop */}
-        {post.media_url && (
-          <div className="relative bg-gray-950">
-            {isVideo ? (
-              <video src={post.media_url} controls className="w-full" />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={post.media_url} alt="" className="w-full" />
-            )}
-            <button
-              onClick={onClose}
-              className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        <div className="p-5">
-          {!post.media_url && (
-            <div className="mb-3 flex justify-end">
-              <button
-                onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          {/* Platform badges + date */}
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            {platforms.map(p => {
-              const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
-              return (
-                <span key={p} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-                  style={{ backgroundColor: color.bg, color: color.text }}>
-                  <PlatformIcon platform={p} size={14} />
-                  {p}
-                </span>
-              );
-            })}
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.cls}`}>
-              {statusCfg.label}
-            </span>
-            <span className="ms-auto text-xs text-gray-400">
-              {hebDate}
-              {post.scheduled_time && (
-                <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>
-              )}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h2 className="mb-2 text-lg font-bold text-[#1e1b4b]">{post.title}</h2>
-
-          {/* Body */}
-          {post.body && (
-            <p className="mb-5 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
-              {post.body}
-            </p>
-          )}
-
-          {/* Client approval actions */}
-          <div className="mb-5 flex gap-3">
-            {currentStatus === "approved" ? (
-              <div className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700">
-                <span>✓</span> הפוסט מאושר
-              </div>
-            ) : (
-              <button
-                disabled={busy}
-                onClick={async () => {
-                  setBusy(true);
-                  try {
-                    await updatePost(post.id, { status: "approved" });
-                    setCurrentStatus("approved");
-                    onChanged();
-                  } finally { setBusy(false); }
-                }}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50"
-              >
-                ✓ אשר פוסט
-              </button>
-            )}
-            <button
-              disabled={busy}
-              onClick={() => setChangeMode(v => !v)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold transition
-                ${changeMode
-                  ? "border-rose-300 bg-rose-50 text-rose-700"
-                  : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                } disabled:opacity-50`}
-            >
-              ↩ בקש שינוי
-            </button>
-          </div>
-
-          {/* Change request text */}
-          {changeMode && (
-            <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 p-4">
-              <p className="mb-2 text-xs font-semibold text-rose-700">מה צריך לשנות?</p>
-              <textarea
-                className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-                rows={3}
-                placeholder="תאר מה תרצה לשנות בפוסט..."
-                value={changeText}
-                onChange={e => setChangeText(e.target.value)}
-              />
-              <button
-                disabled={busy || !changeText.trim()}
-                onClick={requestChanges}
-                className="mt-2 w-full rounded-xl bg-rose-500 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50"
-              >
-                {busy ? "שולח…" : "שלח בקשת שינוי"}
-              </button>
-            </div>
-          )}
-
-          {/* Comments */}
-          <div className="border-t border-[#f3f0ff] pt-4">
-            <h4 className="mb-3 text-sm font-bold text-[#1e1b4b]">
-              הערות {comments.length > 0 && `(${comments.length})`}
-            </h4>
-            <div className="mb-3 space-y-2">
-              {comments.length === 0 && (
-                <p className="text-xs text-gray-400">אין הערות עדיין</p>
-              )}
-              {comments.map(c => (
-                <div key={c.id} className="rounded-2xl bg-[#f5f3ff] px-4 py-2.5 text-sm text-gray-700">
-                  {c.body}
-                  <span className="mt-1 block text-[10px] text-gray-400" dir="ltr">
-                    {new Date(c.created_at).toLocaleString("he-IL")}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                className="flex-1 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-4 py-2 text-sm outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/15"
-                placeholder="כתוב הערה…"
-                value={newComment}
-                onChange={e => setNewComment(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendComment()}
-              />
-              <button
-                onClick={sendComment}
-                disabled={busy || !newComment.trim()}
-                className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
-              >
-                שלח
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Admin form — unchanged edit / create view
-// ─────────────────────────────────────────────────────────────────────────────
-function AdminPostForm({
+function PostForm({
   post,
   isNew,
   defaultDate,
   defaultClientId,
   clients,
   profile,
+  canEdit,
   onClose,
   onChanged,
 }: {
@@ -390,9 +124,11 @@ function AdminPostForm({
   defaultClientId: string | null;
   clients: Client[];
   profile: Profile;
+  canEdit: boolean;
   onClose: () => void;
   onChanged: () => void;
 }) {
+  // Admin edit state
   const [form, setForm] = useState<PostInput>({
     client_id: post?.client_id ?? defaultClientId ?? clients[0]?.id ?? "",
     title: post?.title ?? "",
@@ -406,18 +142,27 @@ function AdminPostForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Client approval state
+  const [currentStatus, setCurrentStatus] = useState<PostStatus>(post?.status ?? "pending");
+  const [changeMode, setChangeMode] = useState(false);
+  const [changeText, setChangeText] = useState("");
+  const [approvalBusy, setApprovalBusy] = useState(false);
+
+  // Comments — shared by both roles
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [commentBusy, setCommentBusy] = useState(false);
 
   useEffect(() => {
     if (post) fetchComments(post.id).then(setComments).catch(() => {});
-  }, [post]);
+  }, [post?.id]);
 
   function update<K extends keyof PostInput>(key: K, value: PostInput[K]) {
     setForm(f => ({ ...f, [key]: value }));
   }
 
+  // ── Admin actions ────────────────────────────────────────────────────────────
   async function handleSave() {
     setError(null);
     if (!form.title.trim()) return setError("יש להזין כותרת");
@@ -468,7 +213,7 @@ function AdminPostForm({
     }
   }
 
-  async function handleAddComment() {
+  async function handleAdminComment() {
     if (!post || !newComment.trim()) return;
     setCommentBusy(true);
     try {
@@ -479,6 +224,67 @@ function AdminPostForm({
     finally { setCommentBusy(false); }
   }
 
+  // ── Client actions ───────────────────────────────────────────────────────────
+  async function sendCommentViaApi(text: string) {
+    const res = await fetch("/api/client-comment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: post!.id, authorId: profile.id, body: text }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    setComments(prev => [...prev, data.comment]);
+  }
+
+  async function handleApprove() {
+    setApprovalBusy(true);
+    try {
+      await updatePost(post!.id, { status: "approved" });
+      setCurrentStatus("approved");
+      setChangeMode(false);
+      onChanged();
+    } finally { setApprovalBusy(false); }
+  }
+
+  async function handleRequestChanges() {
+    if (!changeText.trim()) return;
+    setApprovalBusy(true);
+    try {
+      await sendCommentViaApi(`🔄 בקשת שינוי: ${changeText.trim()}`);
+      await updatePost(post!.id, { status: "pending" });
+      setCurrentStatus("pending");
+      setChangeMode(false);
+      setChangeText("");
+      onChanged();
+    } finally { setApprovalBusy(false); }
+  }
+
+  async function handleClientComment() {
+    if (!newComment.trim()) return;
+    setCommentBusy(true);
+    try {
+      await sendCommentViaApi(newComment.trim());
+      setNewComment("");
+    } catch { /* ignore */ }
+    finally { setCommentBusy(false); }
+  }
+
+  // ── Derived ──────────────────────────────────────────────────────────────────
+  const platforms = parsePlatforms(canEdit ? form.platform : (post?.platform ?? null));
+  const displayDate = canEdit ? form.scheduled_date : (post?.scheduled_date ?? "");
+  const displayTime = canEdit ? form.scheduled_time : (post?.scheduled_time ?? null);
+  const isVideo = (canEdit ? form.media_url : post?.media_url) &&
+    /\.(mp4|mov|avi|webm|mkv)$/i.test((canEdit ? form.media_url : post?.media_url) ?? "");
+  const mediaUrl = canEdit ? form.media_url : (post?.media_url ?? "");
+
+  const hebDate = displayDate
+    ? new Date(displayDate).toLocaleDateString("he-IL", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric",
+      })
+    : "";
+
+  const chip = STATUS_CHIP[currentStatus];
+
   return (
     <div
       className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
@@ -488,18 +294,32 @@ function AdminPostForm({
         className="scroll-thin max-h-[90vh] w-full max-w-lg animate-scale-in overflow-y-auto rounded-2xl border border-line bg-white shadow-modal"
         onClick={e => e.stopPropagation()}
       >
+        {/* ── Header ── */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-white/95 px-5 py-3.5 backdrop-blur">
-          <h3 className="font-bold tracking-tight text-ink">
-            {isNew ? "פוסט חדש" : "עריכת פוסט"}
-          </h3>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <h3 className="truncate font-bold tracking-tight text-ink">
+              {canEdit
+                ? (isNew ? "פוסט חדש" : "עריכת פוסט")
+                : (post?.title ?? "פוסט")}
+            </h3>
+            {!canEdit && post && (
+              <span
+                className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${chip.cls}`}
+                style={chip.style}
+              >
+                {POST_STATUS_LABELS[currentStatus]}
+              </span>
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-xl leading-none text-ink-faint transition hover:bg-gray-100 hover:text-ink"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl leading-none text-ink-faint transition hover:bg-gray-100 hover:text-ink"
           >
             ×
           </button>
         </div>
 
+        {/* ── Body ── */}
         <div className="space-y-4 px-5 py-5">
           {error && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
@@ -507,104 +327,219 @@ function AdminPostForm({
             </div>
           )}
 
-          <Field label="כותרת">
-            <input className={inputCls} value={form.title} onChange={e => update("title", e.target.value)} />
-          </Field>
+          {/* ─ ADMIN: editable title ─ */}
+          {canEdit && (
+            <Field label="כותרת">
+              <input className={inputCls} value={form.title} onChange={e => update("title", e.target.value)} />
+            </Field>
+          )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="לקוח">
-              <select className={inputCls} value={form.client_id} onChange={e => update("client_id", e.target.value)}>
-                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </Field>
-            <Field label="סטטוס">
-              <select className={inputCls} value={form.status} onChange={e => update("status", e.target.value as PostStatus)}>
-                {STATUSES.map(s => <option key={s} value={s}>{POST_STATUS_LABELS[s]}</option>)}
-              </select>
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="תאריך">
-              <input type="date" dir="ltr" className={inputCls} value={form.scheduled_date} onChange={e => update("scheduled_date", e.target.value)} />
-            </Field>
-            <Field label="שעה">
-              <input type="time" dir="ltr" className={inputCls} value={form.scheduled_time ?? ""} onChange={e => update("scheduled_time", e.target.value || null)} />
-            </Field>
-          </div>
-
-          <Field label="פלטפורמה">
-            <div className="flex flex-wrap gap-2 pt-0.5">
-              {["פייסבוק", "אינסטגרם", "טיקטוק", "לינקדאין", "טוויטר"].map(p => {
-                const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
-                const selected = parsePlatforms(form.platform).includes(p);
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => {
-                      const current = parsePlatforms(form.platform);
-                      const next = selected
-                        ? current.filter(x => x !== p)
-                        : [...current, p];
-                      update("platform", next.join(",") || null as unknown as string);
-                    }}
-                    className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition"
-                    style={{
-                      backgroundColor: selected ? color.bg : "transparent",
-                      color: selected ? color.text : "#6b7280",
-                      borderColor: selected ? color.text + "55" : "#e5e7eb",
-                    }}
-                  >
-                    <PlatformIcon platform={p} size={14} />
-                    {p}
-                    {selected && <span style={{ fontSize: 10 }}>✓</span>}
-                  </button>
-                );
-              })}
+          {/* ─ ADMIN: client + status selects ─ */}
+          {canEdit && (
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="לקוח">
+                <select className={inputCls} value={form.client_id} onChange={e => update("client_id", e.target.value)}>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </Field>
+              <Field label="סטטוס">
+                <select className={inputCls} value={form.status} onChange={e => update("status", e.target.value as PostStatus)}>
+                  {STATUSES.map(s => <option key={s} value={s}>{POST_STATUS_LABELS[s]}</option>)}
+                </select>
+              </Field>
             </div>
-          </Field>
+          )}
 
-          <Field label="תמונה / סרטון">
-            {form.media_url ? (
-              <div className="relative overflow-hidden rounded-xl border border-line bg-gray-50">
-                {/\.(mp4|mov|avi|webm|mkv)$/i.test(form.media_url) ? (
-                  <video src={form.media_url} controls className="max-h-52 w-full object-contain" />
-                ) : (
-                  <img src={form.media_url} alt="תצוגה מקדימה" className="max-h-52 w-full object-contain" />
-                )}
-                <button
-                  type="button"
-                  onClick={() => update("media_url", "")}
-                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-sm text-white hover:bg-black/70"
-                >×</button>
+          {/* ─ Date / time ─ */}
+          {canEdit ? (
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="תאריך">
+                <input type="date" dir="ltr" className={inputCls} value={form.scheduled_date} onChange={e => update("scheduled_date", e.target.value)} />
+              </Field>
+              <Field label="שעה">
+                <input type="time" dir="ltr" className={inputCls} value={form.scheduled_time ?? ""} onChange={e => update("scheduled_time", e.target.value || null)} />
+              </Field>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-ink-muted">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>{hebDate}</span>
+              {displayTime && <span dir="ltr">· {displayTime.slice(0, 5)}</span>}
+            </div>
+          )}
+
+          {/* ─ Platform ─ */}
+          <Field label="פלטפורמה">
+            {canEdit ? (
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {["פייסבוק", "אינסטגרם", "טיקטוק", "לינקדאין", "טוויטר"].map(p => {
+                  const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
+                  const selected = parsePlatforms(form.platform).includes(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        const current = parsePlatforms(form.platform);
+                        const next = selected
+                          ? current.filter(x => x !== p)
+                          : [...current, p];
+                        update("platform", next.join(",") || null as unknown as string);
+                      }}
+                      className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition"
+                      style={{
+                        backgroundColor: selected ? color.bg : "transparent",
+                        color: selected ? color.text : "#6b7280",
+                        borderColor: selected ? color.text + "55" : "#e5e7eb",
+                      }}
+                    >
+                      <PlatformIcon platform={p} size={14} />
+                      {p}
+                      {selected && <span style={{ fontSize: 10 }}>✓</span>}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
-              <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-canvas p-6 transition hover:border-brand/50 hover:bg-brand-lighter/20">
-                <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} disabled={uploading} />
-                {uploading ? (
-                  <>
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-                    <span className="text-sm font-medium text-brand">מעלה קובץ…</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-3xl">🖼️</span>
-                    <span className="text-sm font-medium text-ink-muted group-hover:text-brand">לחץ לבחירת קובץ</span>
-                    <span className="text-xs text-ink-faint">תמונות וסרטונים עד 50MB</span>
-                  </>
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {platforms.length > 0 ? platforms.map(p => {
+                  const color = PLATFORM_COLORS[p] ?? { bg: "#f3f4f6", text: "#6b7280" };
+                  return (
+                    <span key={p} className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
+                      style={{ backgroundColor: color.bg, color: color.text }}>
+                      <PlatformIcon platform={p} size={14} />
+                      {p}
+                    </span>
+                  );
+                }) : (
+                  <span className="text-sm text-ink-faint">—</span>
                 )}
-              </label>
+              </div>
             )}
           </Field>
 
-          <Field label="תוכן">
-            <textarea className={`${inputCls} min-h-[96px] resize-y`} value={form.body ?? ""} onChange={e => update("body", e.target.value)} />
+          {/* ─ Media ─ */}
+          <Field label="תמונה / סרטון">
+            {canEdit ? (
+              form.media_url ? (
+                <div className="relative overflow-hidden rounded-xl border border-line bg-gray-50">
+                  {isVideo ? (
+                    <video src={form.media_url} controls className="max-h-52 w-full object-contain" />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={form.media_url} alt="תצוגה מקדימה" className="max-h-52 w-full object-contain" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => update("media_url", "")}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-sm text-white hover:bg-black/70"
+                  >×</button>
+                </div>
+              ) : (
+                <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-canvas p-6 transition hover:border-brand/50 hover:bg-brand-lighter/20">
+                  <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} disabled={uploading} />
+                  {uploading ? (
+                    <>
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                      <span className="text-sm font-medium text-brand">מעלה קובץ…</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-3xl">🖼️</span>
+                      <span className="text-sm font-medium text-ink-muted group-hover:text-brand">לחץ לבחירת קובץ</span>
+                      <span className="text-xs text-ink-faint">תמונות וסרטונים עד 50MB</span>
+                    </>
+                  )}
+                </label>
+              )
+            ) : (
+              mediaUrl ? (
+                <div className="overflow-hidden rounded-xl border border-line bg-gray-50">
+                  {isVideo ? (
+                    <video src={mediaUrl} controls className="max-h-64 w-full object-contain" />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={mediaUrl} alt="" className="max-h-64 w-full object-contain" />
+                  )}
+                </div>
+              ) : (
+                <span className="text-sm text-ink-faint">אין מדיה</span>
+              )
+            )}
           </Field>
 
+          {/* ─ Body / content ─ */}
+          <Field label="תוכן">
+            {canEdit ? (
+              <textarea className={`${inputCls} min-h-[96px] resize-y`} value={form.body ?? ""} onChange={e => update("body", e.target.value)} />
+            ) : (
+              post?.body ? (
+                <p className="rounded-lg border border-line bg-canvas px-3 py-2.5 text-sm leading-relaxed text-ink">
+                  {post.body}
+                </p>
+              ) : (
+                <span className="text-sm text-ink-faint">—</span>
+              )
+            )}
+          </Field>
+
+          {/* ─ CLIENT: approval buttons ─ */}
+          {!canEdit && post && (
+            <>
+              <div className="flex gap-3 pt-1">
+                <button
+                  disabled={approvalBusy}
+                  onClick={handleApprove}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold transition disabled:opacity-50 ${
+                    currentStatus === "approved"
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
+                      : "border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100"
+                  }`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                  מאושר
+                </button>
+                <button
+                  disabled={approvalBusy}
+                  onClick={() => setChangeMode(v => !v)}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold transition disabled:opacity-50 ${
+                    changeMode
+                      ? "border-2 border-rose-300 bg-rose-50 text-rose-700"
+                      : "border-2 border-gray-200 bg-gray-50 text-gray-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                  }`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                  לא מאושר
+                </button>
+              </div>
+              {changeMode && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                  <p className="mb-2 text-xs font-semibold text-rose-700">מה צריך לשנות?</p>
+                  <textarea
+                    className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                    rows={3}
+                    placeholder="תאר מה תרצה לשנות בפוסט..."
+                    value={changeText}
+                    onChange={e => setChangeText(e.target.value)}
+                  />
+                  <button
+                    disabled={approvalBusy || !changeText.trim()}
+                    onClick={handleRequestChanges}
+                    className="mt-2 w-full rounded-xl bg-rose-500 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50"
+                  >
+                    {approvalBusy ? "שולח…" : "שלח בקשת שינוי"}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ─ Comments ─ */}
           {!isNew && (
             <div className="border-t border-line pt-4">
-              <h4 className="mb-2.5 text-sm font-semibold text-ink">תגובות ({comments.length})</h4>
+              <h4 className="mb-2.5 text-sm font-semibold text-ink">
+                {canEdit ? `תגובות (${comments.length})` : `הערות ${comments.length > 0 ? `(${comments.length})` : ""}`}
+              </h4>
               <div className="mb-3 space-y-2">
                 {comments.length === 0 && <p className="text-xs text-ink-faint">אין תגובות עדיין</p>}
                 {comments.map(c => (
@@ -615,28 +550,47 @@ function AdminPostForm({
                 ))}
               </div>
               <div className="flex gap-2">
-                <input className={inputCls} placeholder="הוספת תגובה…" value={newComment} onChange={e => setNewComment(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAddComment()} />
-                <button onClick={handleAddComment} disabled={commentBusy || !newComment.trim()} className="btn-primary shrink-0">שליחה</button>
+                <input
+                  className={inputCls}
+                  placeholder={canEdit ? "הוספת תגובה…" : "כתוב הערה…"}
+                  value={newComment}
+                  onChange={e => setNewComment(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key !== "Enter") return;
+                    if (canEdit) handleAdminComment();
+                    else handleClientComment();
+                  }}
+                />
+                <button
+                  onClick={canEdit ? handleAdminComment : handleClientComment}
+                  disabled={commentBusy || !newComment.trim()}
+                  className="btn-primary shrink-0"
+                >
+                  שליחה
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur">
-          <div>
-            {!isNew && (
-              <button onClick={handleDelete} disabled={saving} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
-                מחיקה
+        {/* ── Footer ── */}
+        {canEdit && (
+          <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur">
+            <div>
+              {!isNew && (
+                <button onClick={handleDelete} disabled={saving} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
+                  מחיקה
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={onClose} className="btn-ghost">ביטול</button>
+              <button onClick={handleSave} disabled={saving} className="btn-primary">
+                {saving ? "שומר…" : "שמירה"}
               </button>
-            )}
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button onClick={onClose} className="btn-ghost">ביטול</button>
-            <button onClick={handleSave} disabled={saving} className="btn-primary">
-              {saving ? "שומר…" : "שמירה"}
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

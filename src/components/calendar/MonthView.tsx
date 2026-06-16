@@ -25,13 +25,19 @@ export function MonthView({
   const days = monthGridDays(current);
 
   return (
-    <div className="flex h-full flex-col" style={{ background: "#F5F2FF" }}>
+    <div
+      className="flex h-full flex-col"
+      style={{
+        background: "radial-gradient(ellipse at 30% 40%, #3b0764 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #2e1065 0%, transparent 50%), #0f0520",
+      }}
+    >
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b border-line" style={{ background: "#EDE9FE" }}>
+      <div className="grid grid-cols-7 border-b border-white/10">
         {HEB_WEEKDAY_SHORT.map((d) => (
           <div
             key={d}
-            className="py-2 text-center text-xs font-bold tracking-wide text-[#5B21B6]"
+            className="py-2 text-center text-xs font-bold tracking-wide"
+            style={{ color: "#a78bfa" }}
           >
             {d}
           </div>
@@ -42,6 +48,7 @@ export function MonthView({
           const key = toISODate(day);
           const posts = postsByDate.get(key) ?? [];
           const inMonth = isSameMonth(day, current);
+          const today = isToday(day);
           return (
             <div
               key={key}
@@ -57,27 +64,33 @@ export function MonthView({
                     }
                   : undefined
               }
-              className={`group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s border-line p-1.5 transition ${
-                inMonth ? "hover:bg-white/60" : "opacity-50"
-              }`}
-              style={{ background: inMonth ? "rgba(255,255,255,0.75)" : "rgba(237,233,254,0.3)" }}
+              className="group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s p-1.5 transition"
+              style={{
+                borderColor: "rgba(167,139,250,0.15)",
+                background: today
+                  ? "rgba(124,58,237,0.18)"
+                  : inMonth
+                    ? "rgba(255,255,255,0.04)"
+                    : "rgba(0,0,0,0.15)",
+                boxShadow: today ? "inset 0 0 0 1px rgba(167,139,250,0.4)" : undefined,
+              }}
             >
               <div className="flex items-center justify-between">
                 <span
-                  className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs ${
-                    isToday(day)
-                      ? "bg-[#1e1b4b] text-white font-black shadow-lg shadow-[#1e1b4b]/30"
-                      : inMonth
-                        ? "font-black text-[#1e1b4b] tracking-tight"
-                        : "font-semibold text-[#c4b5fd]"
-                  }`}
+                  className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-bold`}
+                  style={{
+                    background: today ? "rgba(167,139,250,0.35)" : undefined,
+                    color: today ? "#ffffff" : inMonth ? "rgba(255,255,255,0.85)" : "rgba(167,139,250,0.4)",
+                    boxShadow: today ? "0 0 10px rgba(124,58,237,0.6)" : undefined,
+                  }}
                 >
                   {day.getDate()}
                 </span>
                 {canEdit && (
                   <button
                     onClick={() => onCreateForDate(key)}
-                    className="flex h-5 w-5 items-center justify-center rounded-full text-brand opacity-0 transition hover:bg-brand-lighter group-hover/cell:opacity-100"
+                    className="flex h-5 w-5 items-center justify-center rounded-full opacity-0 transition group-hover/cell:opacity-100"
+                    style={{ color: "#a78bfa" }}
                     title="הוספת פוסט"
                   >
                     +

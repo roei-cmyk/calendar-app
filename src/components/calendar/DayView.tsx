@@ -25,20 +25,30 @@ export function DayView({
   const posts = postsByDate.get(key) ?? [];
 
   return (
-    <div className="mx-auto flex h-full max-w-2xl flex-col p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold tracking-tight text-ink">
+    <div
+      className="flex h-full flex-col"
+      style={{
+        background: "radial-gradient(ellipse at 30% 40%, #3b0764 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #2e1065 0%, transparent 50%), #0f0520",
+      }}
+    >
+      {/* Day header */}
+      <div
+        className="flex items-center justify-between border-b px-6 py-3"
+        style={{ borderColor: "rgba(167,139,250,0.2)", background: "rgba(124,58,237,0.12)" }}
+      >
+        <h2 className="text-base font-black tracking-tight" style={{ color: "#e9d5ff" }}>
           {dayLabel(current)}
         </h2>
         {canEdit && (
-          <button onClick={() => onCreateForDate(key)} className="btn-primary px-3 py-1.5">
+          <button onClick={() => onCreateForDate(key)} className="btn-primary px-3 py-1.5 text-sm">
             + פוסט חדש
           </button>
         )}
       </div>
-      <div className="scroll-thin flex flex-1 flex-col gap-2 overflow-y-auto">
+      {/* Posts list */}
+      <div className="scroll-thin mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 overflow-y-auto p-5">
         {posts.length === 0 ? (
-          <div className="mt-20 text-center text-sm text-ink-faint">
+          <div className="mt-20 text-center text-sm" style={{ color: "rgba(167,139,250,0.4)" }}>
             אין פוסטים מתוזמנים ליום זה
           </div>
         ) : (
