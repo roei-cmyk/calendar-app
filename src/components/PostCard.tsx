@@ -3,12 +3,12 @@
 import type { Client, Post } from "@/lib/types";
 import { POST_STATUS_LABELS } from "@/lib/types";
 
-const STATUS_RING: Record<Post["status"], string> = {
-  draft: "bg-gray-100 text-gray-500 ring-gray-200",
-  pending: "bg-amber-100 text-amber-700 ring-amber-200",
-  approved: "bg-emerald-100 text-emerald-700 ring-emerald-200",
-  scheduled: "bg-sky-100 text-sky-700 ring-sky-200",
-  published: "bg-violet-100 text-violet-700 ring-violet-200",
+const STATUS_CHIP: Record<Post["status"], { cls: string; style?: React.CSSProperties }> = {
+  draft:     { cls: "text-[#4B4869]",  style: { background: "#F1F0F5" } },
+  pending:   { cls: "text-[#5B21B6]",  style: { background: "#EDE9FE" } },
+  approved:  { cls: "text-[#a5b4fc]",  style: { background: "#1e1b4b" } },
+  scheduled: { cls: "text-[#7C3AED]",  style: { background: "#F5F3FF" } },
+  published: { cls: "text-white",       style: { background: "linear-gradient(135deg,#4c1d95,#7c3aed)" } },
 };
 
 export function PostCard({
@@ -39,7 +39,7 @@ export function PostCard({
       } ${compact ? "text-[11px]" : "text-xs"}`}
     >
       <div className="flex items-center justify-between gap-1">
-        <span className="truncate font-semibold text-ink">{post.title}</span>
+        <span className="truncate font-black text-[#1e1b4b] tracking-tight">{post.title}</span>
         <span className="flex shrink-0 items-center gap-1.5">
           {!!post.comment_count && (
             <span className="flex items-center gap-0.5 text-[10px] text-brand-light">
@@ -83,7 +83,8 @@ export function PostCard({
             </span>
           )}
           <span
-            className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium ring-1 ${STATUS_RING[post.status]}`}
+            className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${STATUS_CHIP[post.status].cls}`}
+            style={STATUS_CHIP[post.status].style}
           >
             {POST_STATUS_LABELS[post.status]}
           </span>

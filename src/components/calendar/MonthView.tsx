@@ -25,13 +25,13 @@ export function MonthView({
   const days = monthGridDays(current);
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col" style={{ background: "#F5F2FF" }}>
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b border-line bg-brand-lighter">
+      <div className="grid grid-cols-7 border-b border-line" style={{ background: "#EDE9FE" }}>
         {HEB_WEEKDAY_SHORT.map((d) => (
           <div
             key={d}
-            className="py-2 text-center text-xs font-semibold text-brand"
+            className="py-2 text-center text-xs font-bold tracking-wide text-[#5B21B6]"
           >
             {d}
           </div>
@@ -58,17 +58,18 @@ export function MonthView({
                   : undefined
               }
               className={`group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s border-line p-1.5 transition ${
-                inMonth ? "bg-white hover:bg-brand-lighter/30" : "bg-canvas/60"
+                inMonth ? "hover:bg-white/60" : "opacity-50"
               }`}
+              style={{ background: inMonth ? "rgba(255,255,255,0.75)" : "rgba(237,233,254,0.3)" }}
             >
               <div className="flex items-center justify-between">
                 <span
-                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium ${
+                  className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs ${
                     isToday(day)
-                      ? "bg-brand text-white shadow-sm"
+                      ? "bg-[#1e1b4b] text-white font-black shadow-lg shadow-[#1e1b4b]/30"
                       : inMonth
-                        ? "text-ink-muted"
-                        : "text-ink-faint"
+                        ? "font-black text-[#1e1b4b] tracking-tight"
+                        : "font-semibold text-[#c4b5fd]"
                   }`}
                 >
                   {day.getDate()}
