@@ -90,12 +90,22 @@ export function NotificationBell() {
       {/* Bell button */}
       <button
         onClick={toggleOpen}
-        className={`relative flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20 ${pulse ? "animate-bounce" : ""}`}
         title="התראות"
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95 ${pulse ? "animate-bounce" : ""}`}
+        style={{
+          background: "linear-gradient(135deg, #3b82f6 0%, #7c3aed 50%, #ec4899 100%)",
+          boxShadow: "0 4px 14px rgba(124,58,237,0.5)",
+        }}
       >
-        🔔
+        {/* Bell SVG — white */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
+          <span
+            className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-bold text-white"
+            style={{ background: "linear-gradient(135deg,#f97316,#ef4444)", boxShadow: "0 2px 6px rgba(239,68,68,0.6)" }}
+          >
             {unread > 9 ? "9+" : unread}
           </span>
         )}
