@@ -248,21 +248,31 @@ export function Planner({
             >
               לקוחות
             </h3>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col overflow-hidden rounded-xl" style={{ border: "0.5px solid rgba(167,139,250,0.08)" }}>
               {isAdmin && (
                 <button
                   onClick={() => handleClientFilter(null)}
-                  className="rounded-lg px-3 py-2 text-right text-sm transition"
-                  style={clientFilter === null ? {
-                    background: "rgba(124,58,237,0.2)",
-                    color: "#e9d5ff",
-                    fontWeight: 600,
-                    boxShadow: "inset 0 0 0 0.5px rgba(167,139,250,0.3)",
-                  } : {
-                    color: "rgba(167,139,250,0.45)",
-                  }}
+                  className="flex w-full items-stretch text-right text-sm transition hover:bg-white/[0.05]"
+                  style={{ background: clientFilter === null ? "rgba(124,58,237,0.14)" : undefined }}
                 >
-                  כל הלקוחות
+                  <div style={{
+                    width: 3,
+                    flexShrink: 0,
+                    background: clientFilter === null
+                      ? "linear-gradient(180deg,#c084fc,#7c3aed)"
+                      : "#7c3aed",
+                    opacity: clientFilter === null ? 1 : 0.2,
+                    boxShadow: clientFilter === null ? "2px 0 10px rgba(124,58,237,0.7)" : undefined,
+                  }} />
+                  <div style={{ flex: 1, padding: "10px 12px" }}>
+                    <div style={{
+                      fontSize: 13,
+                      fontWeight: clientFilter === null ? 700 : 400,
+                      color: clientFilter === null ? "#f5f3ff" : "rgba(255,255,255,0.3)",
+                    }}>
+                      כל הלקוחות
+                    </div>
+                  </div>
                 </button>
               )}
               {clients.map((c) => {
@@ -271,24 +281,36 @@ export function Planner({
                   <button
                     key={c.id}
                     onClick={() => handleClientFilter(c.id)}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition"
-                    style={active ? {
-                      background: "rgba(124,58,237,0.2)",
-                      color: "#e9d5ff",
-                      fontWeight: 600,
-                      boxShadow: "inset 0 0 0 0.5px rgba(167,139,250,0.3)",
-                    } : {
-                      color: "rgba(167,139,250,0.45)",
+                    className="flex w-full items-stretch text-right text-sm transition hover:bg-white/[0.05]"
+                    style={{
+                      borderTop: "0.5px solid rgba(255,255,255,0.04)",
+                      background: active ? "rgba(124,58,237,0.14)" : undefined,
                     }}
                   >
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor: c.color,
-                        boxShadow: active ? `0 0 6px ${c.color}` : undefined,
-                      }}
-                    />
-                    <span className="truncate">{c.name}</span>
+                    <div style={{
+                      width: 3,
+                      flexShrink: 0,
+                      background: c.color,
+                      opacity: active ? 1 : 0.3,
+                      boxShadow: active ? `2px 0 12px ${c.color}` : undefined,
+                    }} />
+                    <div style={{ flex: 1, padding: "10px 12px" }}>
+                      <div
+                        className="truncate"
+                        style={{
+                          fontSize: 13,
+                          fontWeight: active ? 700 : 400,
+                          color: active ? "#f5f3ff" : "rgba(255,255,255,0.32)",
+                        }}
+                      >
+                        {c.name}
+                      </div>
+                      {active && (
+                        <div style={{ fontSize: 9, color: "rgba(167,139,250,0.5)", marginTop: 2 }}>
+                          פעיל
+                        </div>
+                      )}
+                    </div>
                   </button>
                 );
               })}

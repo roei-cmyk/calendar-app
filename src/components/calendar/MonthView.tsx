@@ -1,6 +1,7 @@
 "use client";
 
 import { isSameMonth, isToday } from "date-fns";
+import { useState } from "react";
 import type { Client, Post } from "@/lib/types";
 import { HEB_WEEKDAY_SHORT, monthGridDays, toISODate } from "@/lib/date";
 import { PostCard } from "@/components/PostCard";
@@ -23,6 +24,7 @@ export function MonthView({
   onMovePost?: (postId: string, newDate: string) => void;
 }) {
   const days = monthGridDays(current);
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
 
   return (
     <div
@@ -64,15 +66,23 @@ export function MonthView({
                     }
                   : undefined
               }
-              className="group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s p-1.5 transition"
+              onMouseEnter={() => setHoveredDate(key)}
+              onMouseLeave={() => setHoveredDate(null)}
+              className="group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s p-1.5 transition cursor-pointer"
               style={{
                 borderColor: "rgba(167,139,250,0.15)",
-                background: today
-                  ? "rgba(124,58,237,0.18)"
-                  : inMonth
-                    ? "rgba(255,255,255,0.04)"
-                    : "rgba(0,0,0,0.15)",
-                boxShadow: today ? "inset 0 0 0 1px rgba(167,139,250,0.4)" : undefined,
+                background: key === hoveredDate
+                  ? "rgba(124,58,237,0.22)"
+                  : today
+                    ? "rgba(124,58,237,0.1)"
+                    : inMonth
+                      ? "rgba(255,255,255,0.04)"
+                      : "rgba(0,0,0,0.15)",
+                boxShadow: key === hoveredDate
+                  ? "inset 0 0 0 1px rgba(167,139,250,0.5)"
+                  : today
+                    ? "inset 0 0 0 1px rgba(167,139,250,0.2)"
+                    : undefined,
               }}
             >
               <div className="flex items-center justify-between">
