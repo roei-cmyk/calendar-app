@@ -86,7 +86,7 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
   "platform":"...",
   "scheduled_date":"${month}-DD",
   "scheduled_time":"HH:MM",
-  "image_prompt":"[detailed English description of a specific photorealistic scene that matches this exact post content, style: ${designStyle || "professional social media marketing photo"}, perfect lighting, high quality, no text, no logos, no watermarks]"
+  "image_prompt":"[detailed English prompt for Flux AI image generator. Choose the right style: for finance/budget/data use 'flat design infographic, vector illustration, colorful icons, white background'; for food use 'professional food photography, appetizing, warm lighting'; for animals/nature use 'wildlife photography'; for people/families use 'lifestyle photography, no children'; for real estate/city use 'architectural photography golden hour'. Style context: ${designStyle || "professional social media marketing"}. NO text, NO logos, NO watermarks, NO children in image.]"
 }]}
 
 כללים: עברית בלבד לטקסט, scheduled_date בפורמט ${month}-DD, פזר לאורך החודש, JSON בלבד.`,
