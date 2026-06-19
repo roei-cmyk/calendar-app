@@ -20,23 +20,26 @@ export async function POST(req: NextRequest) {
       max_tokens: 300,
       messages: [{
         role: "user",
-        content: `You are an expert at writing prompts for DALL-E 3.
+        content: `You are an expert at writing prompts for DALL-E 3 for Israeli social media marketing.
 
-Convert this image request into a detailed English prompt. Choose the RIGHT visual style:
-- Budget/finance/numbers/charts → "flat design infographic, clean vector illustration, colorful icons, white background, professional business graphic"
-- Food/bakery/pastry → "professional food photography, appetizing, warm lighting, styled"
-- Animals/nature/zoo → "wildlife photography, natural lighting, vivid colors"
-- Families/people/lifestyle → "lifestyle photography, natural light, warm tones, adults only"
-- Real estate/city/buildings → "architectural photography, golden hour, wide angle"
-- Events/holidays/celebrations → "vibrant festive photography, dynamic composition"
-- Art/culture/museums → "editorial photography, dramatic lighting, sophisticated"
+Convert this Hebrew/English image request into a detailed English prompt.
+
+FIRST identify what is being requested:
+- If it mentions a CITY or PLACE (עיר, שכונה, לוד, תל אביב, etc.) → aerial or street view cityscape photography, urban landscape, golden hour, Israeli architecture
+- If it mentions BUDGET/FINANCE/MONEY (תקציב, כלכלה, מספרים, נתונים) → flat design infographic, vector illustration, colorful icons, charts, white background
+- If it mentions FOOD/BAKERY (אוכל, מאפייה, עוגה, לחם) → professional food photography, appetizing, warm lighting
+- If it mentions ANIMALS/ZOO (חיות, ספארי, גן חיות) → wildlife photography, natural lighting
+- If it mentions FAMILIES/PEOPLE (משפחות, ילדים, קהילה) → lifestyle photography, diverse adults, warm tones
+- If it mentions EVENTS/HOLIDAYS (חג, אירוע, חנוכה, פסח) → festive photography, colorful, celebratory
+- If it mentions ART/MUSEUM (אמנות, מוזיאון, תרבות) → editorial photography, artistic, sophisticated
+- If it mentions REAL ESTATE/APARTMENTS (דירות, נדל"ן, בנייה) → modern residential architecture, aerial view
 
 Rules:
 - NO text or words in the image
 - NO logos or watermarks
 - NO children or minors
-- Be specific and visual
-- Return ONLY the English prompt
+- Be very specific and visual about what is in the scene
+- Return ONLY the English prompt, nothing else
 
 Request: ${prompt}`,
       }],
