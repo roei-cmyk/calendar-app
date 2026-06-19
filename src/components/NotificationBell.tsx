@@ -12,7 +12,7 @@ interface Notification {
   created_at: string;
 }
 
-export function NotificationBell() {
+export function NotificationBell({ onOpenPost }: { onOpenPost?: (postId: string) => void }) {
   const [notes, setNotes] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(false);
@@ -142,7 +142,8 @@ export function NotificationBell() {
             {notes.map(n => (
               <div
                 key={n.id}
-                className={`border-b border-[#f9f7ff] px-4 py-3 transition hover:bg-[#f5f3ff] ${!n.is_read ? "bg-[#fdf8ff]" : "bg-white"}`}
+                onClick={() => { setOpen(false); onOpenPost?.(n.post_id); }}
+                className={`border-b border-[#f9f7ff] px-4 py-3 transition cursor-pointer hover:bg-[#f5f3ff] ${!n.is_read ? "bg-[#fdf8ff]" : "bg-white"}`}
               >
                 <div className="flex items-start gap-2">
                   {!n.is_read && (
@@ -154,6 +155,9 @@ export function NotificationBell() {
                     <p className="mt-1 text-[10px] text-gray-400" dir="ltr">
                       {new Date(n.created_at).toLocaleString("he-IL")}
                     </p>
+                    {onOpenPost && (
+                      <p className="mt-1 text-[10px] text-[#7c3aed] font-medium">לחץ לפתיחת הפוסט ←</p>
+                    )}
                   </div>
                 </div>
               </div>

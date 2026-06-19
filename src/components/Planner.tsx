@@ -129,6 +129,19 @@ export function Planner({
     setModalOpen(true);
   }
 
+  async function openPostById(postId: string) {
+    // Check if already loaded
+    const existing = posts.find(p => p.id === postId);
+    if (existing) { openPost(existing); return; }
+    // Fetch from DB
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data } = await supabase.from("posts").select("*").eq("id", postId).single();
+      if (data) openPost(data as Post);
+    } catch { /* silent */ }
+  }
+
   function openCreate(date: string) {
     setEditingPost(null);
     setCreateDate(date);
@@ -198,7 +211,7 @@ export function Planner({
               </div>
             </div>
           </div>
-          <NotificationBell />
+          <NotificationBell onOpenPost={openPostById} />
           <form action={logout}>
             <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
               יציאה
