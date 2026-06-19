@@ -97,7 +97,7 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return NextResponse.json({ error: "שגיאה בפענוח התגובה" }, { status: 500 });
 
-    const parsed = JSON.parse(jsonMatch[0]) as {
+    let parsed: {
       posts: Array<{
         title: string;
         body?: string;
@@ -107,6 +107,12 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
         image_prompt?: string;
       }>;
     };
+    try {
+      parsed = JSON.parse(jsonMatch[0]);
+      if (!Array.isArray(parsed.posts)) throw new Error("Missing posts array");
+    } catch {
+      return NextResponse.json({ error: "שגיאה בפענוח JSON מהAI" }, { status: 500 });
+    }
 
     // Step 2: Build image URLs (Pollinations generates on-demand when browser loads them)
     const imageUrls = generateImagesBatch(parsed.posts.map(p => p.image_prompt));

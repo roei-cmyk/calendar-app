@@ -20,26 +20,22 @@ export async function POST(req: NextRequest) {
       max_tokens: 300,
       messages: [{
         role: "user",
-        content: `You are an expert at writing prompts for DALL-E 3 for Israeli social media marketing.
+        content: `You are an expert at writing prompts for AI image generators for Israeli social media marketing.
 
 Convert this Hebrew/English image request into a detailed English prompt.
 
 FIRST identify what is being requested:
-- If it mentions a CITY or PLACE (עיר, שכונה, לוד, תל אביב, etc.) → aerial or street view cityscape photography, urban landscape, golden hour, Israeli architecture
-- If it mentions BUDGET/FINANCE/MONEY (תקציב, כלכלה, מספרים, נתונים) → flat design infographic, vector illustration, colorful icons, charts, white background
-- If it mentions FOOD/BAKERY (אוכל, מאפייה, עוגה, לחם) → professional food photography, appetizing, warm lighting
-- If it mentions ANIMALS/ZOO (חיות, ספארי, גן חיות) → wildlife photography, natural lighting
-- If it mentions FAMILIES/PEOPLE (משפחות, ילדים, קהילה) → lifestyle photography, diverse adults, warm tones
-- If it mentions EVENTS/HOLIDAYS (חג, אירוע, חנוכה, פסח) → festive photography, colorful, celebratory
-- If it mentions ART/MUSEUM (אמנות, מוזיאון, תרבות) → editorial photography, artistic, sophisticated
-- If it mentions REAL ESTATE/APARTMENTS (דירות, נדל"ן, בנייה) → modern residential architecture, aerial view
+- CITY or PLACE (עיר, שכונה, לוד, תל אביב, etc.) → aerial or street view cityscape photography, urban landscape, golden hour, Israeli architecture
+- BUDGET/FINANCE/MONEY (תקציב, כלכלה, מספרים, נתונים) → flat design infographic, vector illustration, colorful icons, charts, white background
+- FOOD/BAKERY (אוכל, מאפייה, עוגה, לחם) → professional food photography, appetizing, warm lighting
+- ANIMALS/ZOO (חיות, ספארי, גן חיות) → wildlife photography, natural lighting
+- FAMILIES/PEOPLE (משפחות, ילדים, קהילה) → lifestyle photography, diverse adults, warm tones
+- EVENTS/HOLIDAYS (חג, אירוע, חנוכה, פסח) → festive photography, colorful, celebratory
+- ART/MUSEUM (אמנות, מוזיאון, תרבות) → editorial photography, artistic, sophisticated
+- REAL ESTATE/APARTMENTS (דירות, נדל"ן, בנייה) → modern residential architecture, aerial view
 
-Rules:
-- NO text or words in the image
-- NO logos or watermarks
-- NO children or minors
-- Be very specific and visual about what is in the scene
-- Return ONLY the English prompt, nothing else
+Rules: NO text, NO logos, NO watermarks, NO children or minors. Be very specific and visual.
+Return ONLY the English prompt, nothing else.
 
 Request: ${prompt}`,
       }],
@@ -47,18 +43,33 @@ Request: ${prompt}`,
 
     const englishPrompt = msg.content[0].type === "text" ? msg.content[0].text.trim() : prompt;
 
-    // gpt-image-1 generation (same model as ChatGPT)
-    const image = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt: englishPrompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "standard",
-      output_format: "url",
-    } as Parameters<typeof openai.images.generate>[0]);
+    // gpt-image-1 — same model as ChatGPT image generation
+    const response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt: englishPrompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+      }),
+    });
 
-    const url = image.data[0]?.url ?? `data:image/png;base64,${image.data[0]?.b64_json}`;
-    if (!image.data[0]) throw new Error("לא התקבלה תמונה");
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { error?: { message?: string } }).error?.message ?? "שגיאה בייצור תמונה");
+    }
+
+    const data = await response.json() as { data: Array<{ url?: string; b64_json?: string }> };
+    const item = data.data?.[0];
+    if (!item) throw new Error("לא התקבלה תמונה");
+
+    const url = item.url ?? (item.b64_json ? `data:image/png;base64,${item.b64_json}` : null);
+    if (!url) throw new Error("לא התקבל URL לתמונה");
 
     return NextResponse.json({ url, englishPrompt });
   } catch (e) {

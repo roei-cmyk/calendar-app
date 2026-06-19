@@ -42,9 +42,15 @@ ${platform ? `פלטפורמה: ${platform}` : ""}
 
     const raw = message.content[0].type === "text" ? message.content[0].text : "";
     const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) return NextResponse.json({ error: "שגיאה בפענוח" }, { status: 500 });
+    if (!match) return NextResponse.json({ error: "שגיאה בפענוח התגובה" }, { status: 500 });
 
-    const result = JSON.parse(match[0]) as { title: string; body: string };
+    let result: { title: string; body: string };
+    try {
+      result = JSON.parse(match[0]);
+      if (!result.title) throw new Error("Missing title");
+    } catch {
+      return NextResponse.json({ error: "שגיאה בפענוח JSON" }, { status: 500 });
+    }
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

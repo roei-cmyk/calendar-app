@@ -81,7 +81,12 @@ export function PostCard({
             </div>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.media_url} alt="" className="h-12 w-full object-cover" />
+            <img
+              src={post.media_url}
+              alt=""
+              className="h-12 w-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
           )}
         </div>
       )}
