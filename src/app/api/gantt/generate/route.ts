@@ -7,7 +7,7 @@ export const maxDuration = 120;
 function buildImageUrl(prompt: string): string {
   const encoded = encodeURIComponent(prompt);
   const seed = Math.floor(Math.random() * 1000000);
-  return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux-pro`;
 }
 
 function generateImagesBatch(prompts: (string | undefined)[]): (string | null)[] {
@@ -86,7 +86,7 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
   "platform":"...",
   "scheduled_date":"${month}-DD",
   "scheduled_time":"HH:MM",
-  "image_prompt":"photorealistic marketing image for [describe scene in English, style: ${designStyle || "professional social media"}], no text, no logos"
+  "image_prompt":"[detailed English description of a specific photorealistic scene that matches this exact post content, style: ${designStyle || "professional social media marketing photo"}, perfect lighting, high quality, no text, no logos, no watermarks]"
 }]}
 
 כללים: עברית בלבד לטקסט, scheduled_date בפורמט ${month}-DD, פזר לאורך החודש, JSON בלבד.`,

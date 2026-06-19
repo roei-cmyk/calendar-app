@@ -155,6 +155,7 @@ function PostForm({
   const [imgPrompt, setImgPrompt] = useState("");
   const [imgLoading, setImgLoading] = useState(false);
   const [imgError, setImgError] = useState<string | null>(null);
+  const [imgEnglishPrompt, setImgEnglishPrompt] = useState<string | null>(null);
 
   // Client approval state
   const [currentStatus, setCurrentStatus] = useState<PostStatus>(post?.status ?? "pending");
@@ -224,6 +225,7 @@ function PostForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "שגיאה");
+      if (data.englishPrompt) setImgEnglishPrompt(data.englishPrompt);
       update("media_url", data.url);
       setImgAiOpen(false);
       setImgPrompt("");
@@ -546,6 +548,11 @@ function PostForm({
                     onClick={() => update("media_url", "")}
                     className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-sm text-white hover:bg-black/70"
                   >×</button>
+                  {imgEnglishPrompt && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                      <p className="text-[10px] text-white/70 truncate" dir="ltr">{imgEnglishPrompt}</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-canvas p-6 transition hover:border-brand/50 hover:bg-brand-lighter/20">
