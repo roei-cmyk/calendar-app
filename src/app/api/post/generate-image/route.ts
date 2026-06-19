@@ -9,30 +9,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "חסר תיאור לתמונה" }, { status: 400 });
     }
 
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-      }),
-    });
+    const encoded = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true`;
 
-    const data = await res.json();
-    if (!res.ok) {
-      return NextResponse.json({ error: data.error?.message ?? "שגיאה" }, { status: 500 });
+    // Verify the image is reachable
+    const check = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(30000) });
+    if (!check.ok) {
+      return NextResponse.json({ error: "שגיאה ביצירת התמונה" }, { status: 500 });
     }
 
-    const imageUrl = data.data?.[0]?.url;
-    if (!imageUrl) return NextResponse.json({ error: "לא התקבלה תמונה" }, { status: 500 });
-
-    return NextResponse.json({ url: imageUrl });
+    return NextResponse.json({ url });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }

@@ -41,7 +41,7 @@ export function GanttModal({
   });
   const [instructions, setInstructions] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ inserted: number } | null>(null);
+  const [result, setResult] = useState<{ inserted: number; withImages?: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleGenerate() {
@@ -142,6 +142,11 @@ export function GanttModal({
           {result && (
             <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
               ✅ {result.inserted} פוסטים נוצרו ועלו ללוח!
+              {(result.withImages ?? 0) > 0 && (
+                <span className="block text-xs mt-0.5 text-emerald-600">
+                  🖼 {result.withImages} תמונות נוצרו אוטומטית
+                </span>
+              )}
             </div>
           )}
 
