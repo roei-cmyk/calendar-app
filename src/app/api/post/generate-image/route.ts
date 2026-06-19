@@ -47,17 +47,18 @@ Request: ${prompt}`,
 
     const englishPrompt = msg.content[0].type === "text" ? msg.content[0].text.trim() : prompt;
 
-    // DALL-E 3 generation
+    // gpt-image-1 generation (same model as ChatGPT)
     const image = await openai.images.generate({
-      model: "dall-e-3",
+      model: "gpt-image-1",
       prompt: englishPrompt,
       n: 1,
       size: "1024x1024",
       quality: "standard",
-    });
+      output_format: "url",
+    } as Parameters<typeof openai.images.generate>[0]);
 
-    const url = image.data[0]?.url;
-    if (!url) throw new Error("לא התקבלה תמונה");
+    const url = image.data[0]?.url ?? `data:image/png;base64,${image.data[0]?.b64_json}`;
+    if (!image.data[0]) throw new Error("לא התקבלה תמונה");
 
     return NextResponse.json({ url, englishPrompt });
   } catch (e) {
