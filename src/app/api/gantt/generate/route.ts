@@ -10,28 +10,8 @@ function buildImageUrl(prompt: string): string {
   return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
 }
 
-async function generateImagesBatch(prompts: (string | undefined)[]): Promise<(string | null)[]> {
-  const BATCH = 4;
-  const results: (string | null)[] = new Array(prompts.length).fill(null);
-
-  for (let i = 0; i < prompts.length; i += BATCH) {
-    const slice = prompts.slice(i, i + BATCH);
-    const urls = await Promise.all(
-      slice.map(async (p, j) => {
-        if (!p) return null;
-        try {
-          const url = buildImageUrl(p);
-          const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
-          return res.ok ? url : null;
-        } catch {
-          return null;
-        }
-      })
-    );
-    urls.forEach((url, j) => { results[i + j] = url; });
-  }
-
-  return results;
+function generateImagesBatch(prompts: (string | undefined)[]): (string | null)[] {
+  return prompts.map(p => p ? buildImageUrl(p) : null);
 }
 
 export async function POST(req: NextRequest) {
@@ -128,8 +108,8 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
       }>;
     };
 
-    // Step 2: Generate images in batches of 4
-    const imageUrls = await generateImagesBatch(parsed.posts.map(p => p.image_prompt));
+    // Step 2: Build image URLs (Pollinations generates on-demand when browser loads them)
+    const imageUrls = generateImagesBatch(parsed.posts.map(p => p.image_prompt));
 
     // Step 3: Delete old drafts for this month
     const from = `${month}-01`;
