@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const { data: client } = await supabase
       .from("clients")
-      .select("id, name")
+      .select("id, name, business_description, target_audience, competitors, tone, design_notes, content_pillars, social_channels")
       .eq("id", clientId)
       .single();
 
@@ -46,7 +46,25 @@ export async function POST(req: NextRequest) {
     const [year, mon] = month.split("-").map(Number);
     const daysInMonth = new Date(year, mon, 0).getDate();
 
-    // Compact prompt — less tokens = faster response
+    // Build client profile context
+    const profileLines = [
+      client.business_description && `תיאור העסק: ${client.business_description}`,
+      client.target_audience      && `קהל יעד: ${client.target_audience}`,
+      client.competitors          && `מתחרים: ${client.competitors}`,
+      client.tone                 && `טון וסגנון: ${client.tone}`,
+      client.design_notes         && `הערות עיצוב: ${client.design_notes}`,
+    ].filter(Boolean).join("\n");
+
+    // Content pillars instruction
+    const pillarsText = client.content_pillars?.length
+      ? `\nעמודי תוכן (חלוקה נדרשת):\n${client.content_pillars.map((p: { name: string; percentage: number }) => `- ${p.name}: ${p.percentage}% מהפוסטים`).join("\n")}\nחשוב: שמור על חלוקה זו בין הנושאים.`
+      : "";
+
+    // Social channels instruction
+    const channelsText = client.social_channels?.length
+      ? `\nערוצים פעילים ותדירות:\n${client.social_channels.map((c: { platform: string; posts_per_week: number }) => `- ${c.platform}: ${c.posts_per_week} פוסטים לשבוע (≈${c.posts_per_week * 4} לחודש)`).join("\n")}\nחשוב: התאם את סגנון הכתיבה לכל פלטפורמה (אינסטגרם=קצר+אמוג׳י, לינקדאין=מקצועי, פייסבוק=שיחתי, טיקטוק=טרנדי).`
+      : "";
+
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
@@ -55,7 +73,8 @@ export async function POST(req: NextRequest) {
           role: "user",
           content: `צור לוח תוכן חודשי לרשתות חברתיות עבור: ${client.name}.
 חודש: ${month} (${daysInMonth} ימים)
-הוראות: ${instructions}
+${profileLines ? `\nפרופיל הלקוח:\n${profileLines}` : ""}${pillarsText}${channelsText}
+הוראות נוספות: ${instructions}
 
 החזר JSON בלבד:
 {"posts":[{"title":"...","body":"...","platform":"...","scheduled_date":"${month}-DD","scheduled_time":"HH:MM"}]}

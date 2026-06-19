@@ -16,6 +16,7 @@ import { WeekView } from "@/components/calendar/WeekView";
 import { DayView } from "@/components/calendar/DayView";
 import { PostModal } from "@/components/PostModal";
 import { GanttModal } from "@/components/GanttModal";
+import { ClientProfileModal } from "@/components/ClientProfileModal";
 import { NotificationBell } from "@/components/NotificationBell";
 import { logout } from "@/app/login/actions";
 
@@ -62,10 +63,12 @@ export function Planner({
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
   const [ganttOpen, setGanttOpen] = useState(false);
   const [previewAsClient, setPreviewAsClient] = useState(false);
+  const [profileClient, setProfileClient] = useState<Client | null>(null);
+  const [clientsList, setClientsList] = useState<Client[]>(clients);
 
   const clientsById = useMemo(
-    () => new Map(clients.map((c) => [c.id, c])),
-    [clients],
+    () => new Map(clientsList.map((c) => [c.id, c])),
+    [clientsList],
   );
 
   const range = useMemo(() => rangeFor(view, current), [view, current]);
@@ -148,7 +151,7 @@ export function Planner({
     if (!id) setPreviewAsClient(false);
   };
 
-  const activeClient = clientFilter ? clients.find(c => c.id === clientFilter) : null;
+  const activeClient = clientFilter ? clientsList.find(c => c.id === clientFilter) : null;
 
   const viewProps = {
     current,
@@ -224,21 +227,30 @@ export function Planner({
         <aside
           className="hidden w-60 shrink-0 flex-col gap-4 p-4 md:flex"
           style={{
-            background: "rgba(7,4,18,0.97)",
-            borderRight: "0.5px solid rgba(167,139,250,0.12)",
+            background: "rgba(30,18,60,0.97)",
+            borderRight: "0.5px solid rgba(167,139,250,0.18)",
           }}
         >
           {isAdmin && (
-            <button
+            <div
               onClick={() => setGanttOpen(true)}
-              className="w-full rounded-xl py-2.5 text-sm font-bold text-white transition active:scale-95"
-              style={{
-                background: "linear-gradient(135deg, #4c1d95, #7c3aed)",
-                boxShadow: "0 4px 16px rgba(124,58,237,0.35)",
-              }}
+              className="w-full cursor-pointer active:scale-95 transition-transform"
+              style={{ padding: "2px", borderRadius: "10px", background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f97316 100%)" }}
             >
-              ✨ צור גאנט AI
-            </button>
+              <button
+                className="w-full rounded-[8px] py-2 text-sm font-bold text-[#e9d5ff] transition-all"
+                style={{ background: "#0d0620", boxShadow: "inset 0 0 20px rgba(124,58,237,0.15)", border: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#180d35")}
+                onMouseLeave={e => (e.currentTarget.style.background = "#0d0620")}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+                  </svg>
+                  צור גאנט AI
+                </span>
+              </button>
+            </div>
           )}
 
           <div>
@@ -275,43 +287,60 @@ export function Planner({
                   </div>
                 </button>
               )}
-              {clients.map((c) => {
+              {clientsList.map((c) => {
                 const active = clientFilter === c.id;
                 return (
-                  <button
+                  <div
                     key={c.id}
-                    onClick={() => handleClientFilter(c.id)}
-                    className="flex w-full items-stretch text-right text-sm transition hover:bg-white/[0.05]"
+                    className="group/client flex w-full items-stretch"
                     style={{
                       borderTop: "0.5px solid rgba(255,255,255,0.04)",
                       background: active ? "rgba(124,58,237,0.14)" : undefined,
                     }}
                   >
-                    <div style={{
-                      width: 3,
-                      flexShrink: 0,
-                      background: c.color,
-                      opacity: active ? 1 : 0.3,
-                      boxShadow: active ? `2px 0 12px ${c.color}` : undefined,
-                    }} />
-                    <div style={{ flex: 1, padding: "10px 12px" }}>
-                      <div
-                        className="truncate"
-                        style={{
-                          fontSize: 13,
-                          fontWeight: active ? 700 : 400,
-                          color: active ? "#f5f3ff" : "rgba(255,255,255,0.32)",
-                        }}
-                      >
-                        {c.name}
-                      </div>
-                      {active && (
-                        <div style={{ fontSize: 9, color: "rgba(167,139,250,0.5)", marginTop: 2 }}>
-                          פעיל
+                    <button
+                      onClick={() => handleClientFilter(c.id)}
+                      className="flex flex-1 items-stretch text-right text-sm transition hover:bg-white/[0.05]"
+                    >
+                      <div style={{
+                        width: 3,
+                        flexShrink: 0,
+                        background: c.color,
+                        opacity: active ? 1 : 0.3,
+                        boxShadow: active ? `2px 0 12px ${c.color}` : undefined,
+                      }} />
+                      <div style={{ flex: 1, padding: "10px 12px" }}>
+                        <div
+                          className="truncate"
+                          style={{
+                            fontSize: 13,
+                            fontWeight: active ? 700 : 400,
+                            color: active ? "#f5f3ff" : "rgba(255,255,255,0.32)",
+                          }}
+                        >
+                          {c.name}
                         </div>
-                      )}
-                    </div>
-                  </button>
+                        {active && (
+                          <div style={{ fontSize: 9, color: "rgba(167,139,250,0.5)", marginTop: 2 }}>
+                            {c.business_description ? "✓ יש פרופיל" : "אין פרופיל"}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => setProfileClient(c)}
+                        className="flex items-center px-2 opacity-0 transition group-hover/client:opacity-100"
+                        style={{ color: "rgba(167,139,250,0.6)" }}
+                        title="עריכת פרופיל לקוח"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -343,8 +372,8 @@ export function Planner({
           <div
             className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5"
             style={{
-              background: "rgba(15,5,32,0.85)",
-              borderColor: "rgba(167,139,250,0.2)",
+              background: "rgba(38,20,75,0.92)",
+              borderColor: "rgba(167,139,250,0.25)",
               backdropFilter: "blur(8px)",
             }}
           >
@@ -429,7 +458,7 @@ export function Planner({
           </div>
 
           {/* Calendar surface */}
-          <div className="flex-1 overflow-hidden" style={{ background: "#0f0520" }}>
+          <div className="flex-1 overflow-hidden" style={{ background: "#1c0d42" }}>
             {view === "month" && <MonthView {...viewProps} />}
             {view === "week" && <WeekView {...viewProps} />}
             {view === "day" && <DayView {...viewProps} />}
@@ -437,10 +466,22 @@ export function Planner({
         </main>
       </div>
 
+      {profileClient && (
+        <ClientProfileModal
+          client={profileClient}
+          onClose={() => setProfileClient(null)}
+          onSaved={(updated) => {
+            setClientsList(prev => prev.map(c => c.id === updated.id ? updated : c));
+            setProfileClient(null);
+          }}
+        />
+      )}
+
       {ganttOpen && (
         <GanttModal
-          clients={clients}
+          clients={clientsList}
           defaultClientId={clientFilter}
+          defaultMonth={`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`}
           onClose={() => setGanttOpen(false)}
           onDone={load}
         />

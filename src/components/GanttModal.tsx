@@ -2,35 +2,43 @@
 
 import { useState } from "react";
 import type { Client } from "@/lib/types";
+import { AiSpinner } from "@/components/AiSpinner";
 
-const MONTHS = [
-  { value: "2025-07", label: "יולי 2025" },
-  { value: "2025-08", label: "אוגוסט 2025" },
-  { value: "2025-09", label: "ספטמבר 2025" },
-  { value: "2025-10", label: "אוקטובר 2025" },
-  { value: "2025-11", label: "נובמבר 2025" },
-  { value: "2025-12", label: "דצמבר 2025" },
-  { value: "2026-01", label: "ינואר 2026" },
-  { value: "2026-02", label: "פברואר 2026" },
-  { value: "2026-03", label: "מרץ 2026" },
-  { value: "2026-04", label: "אפריל 2026" },
-  { value: "2026-05", label: "מאי 2026" },
-  { value: "2026-06", label: "יוני 2026" },
-];
+const HEB_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+
+function buildMonths() {
+  const now = new Date();
+  const months = [];
+  for (let i = -1; i <= 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    months.push({ value: `${y}-${m}`, label: `${HEB_MONTHS[d.getMonth()]} ${y}` });
+  }
+  return months;
+}
+
+const MONTHS = buildMonths();
 
 export function GanttModal({
   clients,
   defaultClientId,
+  defaultMonth,
   onClose,
   onDone,
 }: {
   clients: Client[];
   defaultClientId: string | null;
+  defaultMonth?: string;
   onClose: () => void;
   onDone: () => void;
 }) {
   const [clientId, setClientId] = useState(defaultClientId ?? clients[0]?.id ?? "");
-  const [month, setMonth] = useState(MONTHS[0].value);
+  const [month, setMonth] = useState(() => {
+    if (defaultMonth && MONTHS.find(m => m.value === defaultMonth)) return defaultMonth;
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
   const [instructions, setInstructions] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ inserted: number } | null>(null);
@@ -137,14 +145,17 @@ export function GanttModal({
             </div>
           )}
 
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="w-full rounded-full py-2.5 text-sm font-semibold text-white transition disabled:opacity-60"
-            style={{ background: loading ? "#a78bfa" : "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
-          >
-            {loading ? "Claude בונה את הגאנט... ✨" : "צור גאנט אוטומטי ✨"}
-          </button>
+          {loading && <AiSpinner label="Claude בונה את הגאנט החודשי…" />}
+
+          {!loading && (
+            <button
+              onClick={handleGenerate}
+              className="w-full rounded-full py-2.5 text-sm font-semibold text-white transition"
+              style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
+            >
+              צור גאנט אוטומטי ✨
+            </button>
+          )}
         </div>
       </div>
     </div>

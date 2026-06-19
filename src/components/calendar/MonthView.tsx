@@ -30,7 +30,7 @@ export function MonthView({
     <div
       className="flex h-full flex-col"
       style={{
-        background: "radial-gradient(ellipse at 30% 40%, #3b0764 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #2e1065 0%, transparent 50%), #0f0520",
+        background: "radial-gradient(ellipse at 30% 40%, #4c1d95 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #3b0f8c 0%, transparent 50%), #1c0d42",
       }}
     >
       {/* Weekday headers */}
@@ -70,14 +70,14 @@ export function MonthView({
               onMouseLeave={() => setHoveredDate(null)}
               className="group/cell scroll-thin flex flex-col gap-1 overflow-y-auto border-b border-s p-1.5 transition cursor-pointer"
               style={{
-                borderColor: "rgba(167,139,250,0.15)",
+                borderColor: "rgba(167,139,250,0.22)",
                 background: key === hoveredDate
-                  ? "rgba(124,58,237,0.22)"
+                  ? "rgba(124,58,237,0.28)"
                   : today
-                    ? "rgba(124,58,237,0.1)"
+                    ? "rgba(124,58,237,0.18)"
                     : inMonth
-                      ? "rgba(255,255,255,0.04)"
-                      : "rgba(0,0,0,0.15)",
+                      ? "rgba(255,255,255,0.07)"
+                      : "rgba(0,0,0,0.08)",
                 boxShadow: key === hoveredDate
                   ? "inset 0 0 0 1px rgba(167,139,250,0.5)"
                   : today

@@ -7,12 +7,34 @@ export type PostStatus =
   | "scheduled"
   | "published";
 
+export interface ContentPillar {
+  name: string;       // e.g. "טיפים מקצועיים"
+  percentage: number; // 0-100
+}
+
+export type SocialChannel = "instagram" | "facebook" | "linkedin" | "tiktok" | "twitter";
+
+export interface ChannelConfig {
+  platform: SocialChannel;
+  posts_per_week: number;
+}
+
 export interface Client {
   id: string;
   name: string;
   slug: string;
   color: string;
   created_at: string;
+  business_description: string | null;
+  target_audience: string | null;
+  competitors: string | null;
+  tone: string | null;
+  design_notes: string | null;
+  content_pillars: ContentPillar[] | null;
+  social_channels: ChannelConfig[] | null;
+  website_url: string | null;
+  instagram_handle: string | null;
+  facebook_url: string | null;
 }
 
 export interface Profile {

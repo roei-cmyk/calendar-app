@@ -143,6 +143,19 @@ function PostForm({
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  // AI improve text
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiInstructions, setAiInstructions] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<{ title: string; body: string } | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  // AI image generation
+  const [imgAiOpen, setImgAiOpen] = useState(false);
+  const [imgPrompt, setImgPrompt] = useState("");
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgError, setImgError] = useState<string | null>(null);
+
   // Client approval state
   const [currentStatus, setCurrentStatus] = useState<PostStatus>(post?.status ?? "pending");
   const [changeMode, setChangeMode] = useState(false);
@@ -160,6 +173,65 @@ function PostForm({
 
   function update<K extends keyof PostInput>(key: K, value: PostInput[K]) {
     setForm(f => ({ ...f, [key]: value }));
+  }
+
+  // ── AI improve ───────────────────────────────────────────────────────────────
+  async function handleAiImprove() {
+    if (!aiInstructions.trim()) return;
+    setAiLoading(true);
+    setAiError(null);
+    setAiSuggestion(null);
+    try {
+      const res = await fetch("/api/post/improve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title,
+          body: form.body,
+          platform: form.platform,
+          instructions: aiInstructions,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "שגיאה");
+      setAiSuggestion(data);
+    } catch (e) {
+      setAiError((e as Error).message);
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  function acceptAiSuggestion() {
+    if (!aiSuggestion) return;
+    update("title", aiSuggestion.title);
+    update("body", aiSuggestion.body);
+    setAiOpen(false);
+    setAiSuggestion(null);
+    setAiInstructions("");
+  }
+
+  // ── AI image generation ──────────────────────────────────────────────────────
+  async function handleGenerateImage() {
+    if (!imgPrompt.trim()) return;
+    setImgLoading(true);
+    setImgError(null);
+    try {
+      const res = await fetch("/api/post/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: imgPrompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "שגיאה");
+      update("media_url", data.url);
+      setImgAiOpen(false);
+      setImgPrompt("");
+    } catch (e) {
+      setImgError((e as Error).message);
+    } finally {
+      setImgLoading(false);
+    }
   }
 
   // ── Admin actions ────────────────────────────────────────────────────────────
@@ -419,7 +491,47 @@ function PostForm({
           </Field>
 
           {/* ─ Media ─ */}
-          <Field label="תמונה / סרטון">
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-xs font-medium text-ink-muted">תמונה / סרטון</span>
+              {canEdit && !form.media_url && (
+                <button
+                  type="button"
+                  onClick={() => { setImgAiOpen(v => !v); setImgError(null); }}
+                  className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition"
+                  style={{
+                    background: imgAiOpen ? "linear-gradient(135deg,#4c1d95,#7c3aed)" : "rgba(124,58,237,0.1)",
+                    color: imgAiOpen ? "white" : "#7c3aed",
+                  }}
+                >
+                  🎨 צור תמונה עם AI
+                </button>
+              )}
+            </div>
+
+            {canEdit && imgAiOpen && !form.media_url && (
+              <div className="mb-2 rounded-xl border border-[#ddd6fe] bg-[#f5f3ff] p-3 space-y-2">
+                <p className="text-[11px] font-semibold text-[#4c1d95]">תאר את התמונה שתרצה</p>
+                <textarea
+                  className="w-full rounded-lg border border-[#c4b5fd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/20 resize-none"
+                  rows={2}
+                  placeholder='לדוגמה: "תמונת מבצע סוף שבוע לחנות ילדים, עיצוב צבעוני ושמח"'
+                  value={imgPrompt}
+                  onChange={e => setImgPrompt(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleGenerateImage(); } }}
+                />
+                {imgError && <p className="text-xs text-rose-600">{imgError}</p>}
+                <button
+                  onClick={handleGenerateImage}
+                  disabled={imgLoading || !imgPrompt.trim()}
+                  className="w-full rounded-lg py-2 text-xs font-bold text-white transition disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg,#4c1d95,#7c3aed)" }}
+                >
+                  {imgLoading ? "מייצר תמונה… 🎨 (כ-10 שניות)" : "צור תמונה ✨"}
+                </button>
+              </div>
+            )}
+
             {canEdit ? (
               form.media_url ? (
                 <div className="relative overflow-hidden rounded-xl border border-line bg-gray-50">
@@ -466,10 +578,74 @@ function PostForm({
                 <span className="text-sm text-ink-faint">אין מדיה</span>
               )
             )}
-          </Field>
+          </div>
 
           {/* ─ Body / content ─ */}
-          <Field label="תוכן">
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-xs font-medium text-ink-muted">תוכן</span>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => { setAiOpen(v => !v); setAiSuggestion(null); setAiError(null); }}
+                  className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition"
+                  style={{
+                    background: aiOpen ? "linear-gradient(135deg,#4c1d95,#7c3aed)" : "rgba(124,58,237,0.1)",
+                    color: aiOpen ? "white" : "#7c3aed",
+                  }}
+                >
+                  ✨ שפר עם AI
+                </button>
+              )}
+            </div>
+
+            {canEdit && aiOpen && (
+              <div className="mb-2 rounded-xl border border-[#ddd6fe] bg-[#f5f3ff] p-3 space-y-2">
+                <p className="text-[11px] font-semibold text-[#4c1d95]">מה לשנות?</p>
+                <textarea
+                  className="w-full rounded-lg border border-[#c4b5fd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/20 resize-none"
+                  rows={2}
+                  placeholder='לדוגמה: "קצר ל-3 משפטים", "תן טון יותר עירוני", "הוסף קריאה לפעולה"'
+                  value={aiInstructions}
+                  onChange={e => setAiInstructions(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAiImprove(); } }}
+                />
+                {aiError && <p className="text-xs text-rose-600">{aiError}</p>}
+                {aiSuggestion && (
+                  <div className="rounded-lg border border-[#c4b5fd] bg-white p-3 space-y-2">
+                    <p className="text-[10px] font-bold text-[#7c3aed] uppercase tracking-wide">הצעת AI</p>
+                    <p className="text-sm font-bold text-ink">{aiSuggestion.title}</p>
+                    {aiSuggestion.body && <p className="text-sm text-ink-muted whitespace-pre-wrap">{aiSuggestion.body}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={acceptAiSuggestion}
+                        className="flex-1 rounded-lg py-1.5 text-xs font-bold text-white transition"
+                        style={{ background: "linear-gradient(135deg,#4c1d95,#7c3aed)" }}
+                      >
+                        אמץ הצעה
+                      </button>
+                      <button
+                        onClick={() => setAiSuggestion(null)}
+                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
+                      >
+                        בטל
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!aiSuggestion && (
+                  <button
+                    onClick={handleAiImprove}
+                    disabled={aiLoading || !aiInstructions.trim()}
+                    className="w-full rounded-lg py-2 text-xs font-bold text-white transition disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg,#4c1d95,#7c3aed)" }}
+                  >
+                    {aiLoading ? "Claude כותב… ✨" : "צור הצעה ✨"}
+                  </button>
+                )}
+              </div>
+            )}
+
             {canEdit ? (
               <textarea className={`${inputCls} min-h-[96px] resize-y`} value={form.body ?? ""} onChange={e => update("body", e.target.value)} />
             ) : (
@@ -481,7 +657,7 @@ function PostForm({
                 <span className="text-sm text-ink-faint">—</span>
               )
             )}
-          </Field>
+          </div>
 
           {/* ─ CLIENT: approval buttons ─ */}
           {!canEdit && post && (

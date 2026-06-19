@@ -28,7 +28,7 @@ export function DayView({
     <div
       className="flex h-full flex-col"
       style={{
-        background: "radial-gradient(ellipse at 30% 40%, #3b0764 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #2e1065 0%, transparent 50%), #0f0520",
+        background: "radial-gradient(ellipse at 30% 40%, #4c1d95 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #3b0f8c 0%, transparent 50%), #1c0d42",
       }}
     >
       {/* Day header */}
