@@ -26,6 +26,19 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    // Create notification for admin directly (no trigger dependency)
+    const { data: post } = await supabase
+      .from("posts")
+      .select("title")
+      .eq("id", postId)
+      .single();
+
+    await supabase.from("notifications").insert({
+      post_id: postId,
+      post_title: post?.title ?? "פוסט ללא כותרת",
+      comment_body: body.trim(),
+    });
+
     return NextResponse.json({ comment });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
