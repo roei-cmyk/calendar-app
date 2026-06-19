@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
 
     const encoded = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
-    const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true`;
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
 
-    // Verify the image is reachable
-    const check = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(30000) });
-    if (!check.ok) {
+    // Fetch the actual image to verify it works
+    const res = await fetch(url, { signal: AbortSignal.timeout(45000) });
+    if (!res.ok) {
       return NextResponse.json({ error: "שגיאה ביצירת התמונה" }, { status: 500 });
     }
 
