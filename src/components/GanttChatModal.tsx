@@ -69,9 +69,10 @@ export function GanttChatModal({
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
 
-  const [messages,   setMessages]   = useState<ChatMessage[]>([]);
-  const [draftPosts, setDraftPosts] = useState<DraftPost[]>([]);
-  const [input,      setInput]      = useState("");
+  const [messages,      setMessages]      = useState<ChatMessage[]>([]);
+  const [draftPosts,    setDraftPosts]    = useState<DraftPost[]>([]);
+  const [selectedPost,  setSelectedPost]  = useState<DraftPost | null>(null);
+  const [input,         setInput]         = useState("");
   const [loading,    setLoading]    = useState(false);
   const [saving,     setSaving]     = useState(false);
   const [savedOk,    setSavedOk]    = useState(false);
@@ -399,11 +400,12 @@ export function GanttChatModal({
                   return (
                     <div
                       key={i}
-                      className="rounded-xl p-3 text-sm transition-all"
+                      className="rounded-xl p-3 text-sm transition-all cursor-pointer"
                       style={{
                         background: "rgba(255,255,255,0.04)",
                         border: "1px solid rgba(255,255,255,0.07)",
                       }}
+                      onClick={() => setSelectedPost(post)}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
                     >
@@ -447,6 +449,7 @@ export function GanttChatModal({
                           {post.body}
                         </div>
                       )}
+                      <div className="text-[10px] mt-1.5" style={{ color: "rgba(124,58,237,0.5)" }}>לחץ לצפייה מלאה</div>
                     </div>
                   );
                 })
@@ -455,6 +458,66 @@ export function GanttChatModal({
           </div>
         </div>
       </div>
+
+      {/* Post detail overlay */}
+      {selectedPost && (() => {
+        const color = PLATFORM_COLORS[selectedPost.platform] ?? "#7c3aed";
+        return (
+          <div
+            className="absolute inset-0 z-50 flex items-center justify-center p-6"
+            style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
+            onClick={() => setSelectedPost(null)}
+          >
+            <div
+              className="w-full max-w-md rounded-2xl p-5 flex flex-col gap-3"
+              style={{ background: "#1a0a2e", border: `1px solid ${color}44`, boxShadow: `0 0 40px ${color}22` }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${color}28`, color }}>
+                    {PLATFORM_LABELS[selectedPost.platform] ?? selectedPost.platform}
+                  </span>
+                  {selectedPost.post_type && (
+                    <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.07)", color: "#9ca3af" }}>
+                      {POST_TYPE_LABELS[selectedPost.post_type] ?? selectedPost.post_type}
+                    </span>
+                  )}
+                  <span className="font-mono text-xs" style={{ color: "#6b7280" }}>
+                    {selectedPost.scheduled_date ? formatDate(selectedPost.scheduled_date) : ""}
+                    {selectedPost.scheduled_time ? ` ${selectedPost.scheduled_time}` : ""}
+                  </span>
+                </div>
+                <button onClick={() => setSelectedPost(null)} className="text-gray-500 hover:text-white text-xl leading-none">×</button>
+              </div>
+
+              {/* Title */}
+              <div className="font-bold text-base leading-snug" style={{ color: "#e9d5ff" }} dir="rtl">
+                {selectedPost.title}
+              </div>
+
+              {/* Body */}
+              {selectedPost.body && (
+                <div
+                  className="text-sm leading-relaxed whitespace-pre-wrap rounded-xl p-3"
+                  style={{ background: "rgba(255,255,255,0.04)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.07)" }}
+                  dir="rtl"
+                >
+                  {selectedPost.body}
+                </div>
+              )}
+
+              {/* Image prompt */}
+              {selectedPost.image_prompt && (
+                <div className="text-xs rounded-xl p-3" style={{ background: "rgba(124,58,237,0.08)", color: "#a78bfa", border: "1px solid rgba(124,58,237,0.15)" }}>
+                  🖼 <span className="opacity-60">Image prompt:</span> {selectedPost.image_prompt}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
