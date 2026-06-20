@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Notification {
@@ -12,7 +12,7 @@ interface Notification {
   created_at: string;
 }
 
-export function NotificationBell({ onOpenPost }: { onOpenPost?: (postId: string) => void }) {
+export const NotificationBell = memo(function NotificationBell({ onOpenPost }: { onOpenPost?: (postId: string) => void }) {
   const [notes, setNotes] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(false);
@@ -167,4 +167,4 @@ export function NotificationBell({ onOpenPost }: { onOpenPost?: (postId: string)
       )}
     </div>
   );
-}
+});

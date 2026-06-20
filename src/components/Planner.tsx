@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   endOfMonth,
   endOfWeek,
@@ -16,8 +16,10 @@ import { WeekView } from "@/components/calendar/WeekView";
 import { DayView } from "@/components/calendar/DayView";
 import { PostModal } from "@/components/PostModal";
 import { GanttModal } from "@/components/GanttModal";
+import { GanttChatModal } from "@/components/GanttChatModal";
 import { ClientProfileModal } from "@/components/ClientProfileModal";
 import { NotificationBell } from "@/components/NotificationBell";
+import { TrendPanel } from "@/components/TrendPanel";
 import { ClientFeed } from "@/components/ClientFeed";
 import { logout } from "@/app/login/actions";
 
@@ -62,11 +64,18 @@ export function Planner({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
-  const [ganttOpen, setGanttOpen] = useState(false);
+  const [ganttOpen,     setGanttOpen]     = useState(false);
+  const [ganttChatOpen, setGanttChatOpen] = useState(false);
+  const [trendOpen,     setTrendOpen]     = useState(false);
   const [previewAsClient, setPreviewAsClient] = useState(false);
   const [clientFeedOpen, setClientFeedOpen] = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
+
+  // Keep a ref to the latest posts so openPostById can read them without
+  // becoming a new function on every posts update (which would remount NotificationBell).
+  const postsRef = useRef(posts);
+  useEffect(() => { postsRef.current = posts; }, [posts]);
 
   const clientsById = useMemo(
     () => new Map(clientsList.map((c) => [c.id, c])),
@@ -125,30 +134,30 @@ export function Planner({
     [posts],
   );
 
-  function openPost(post: Post) {
+  const openPost = useCallback((post: Post) => {
     setEditingPost(post);
     setCreateDate(post.scheduled_date);
     setModalOpen(true);
-  }
+  }, []);
 
-  async function openPostById(postId: string) {
-    // Check if already loaded
-    const existing = posts.find(p => p.id === postId);
+  // Stable across renders — reads latest posts via ref so onOpenPost passed to
+  // NotificationBell never changes identity, preventing spurious remounts.
+  const openPostById = useCallback(async (postId: string) => {
+    const existing = postsRef.current.find(p => p.id === postId);
     if (existing) { openPost(existing); return; }
-    // Fetch from DB
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const { data } = await supabase.from("posts").select("*").eq("id", postId).single();
       if (data) openPost(data as Post);
     } catch { /* silent */ }
-  }
+  }, [openPost]);
 
-  function openCreate(date: string) {
+  const openCreate = useCallback((date: string) => {
     setEditingPost(null);
     setCreateDate(date);
     setModalOpen(true);
-  }
+  }, []);
 
   const rangeLabel =
     view === "day"
@@ -250,6 +259,21 @@ export function Planner({
               </div>
             </div>
           </div>
+          {/* Trends button */}
+          <button
+            onClick={() => setTrendOpen(v => !v)}
+            title="טרנדים חמים"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95"
+            style={{
+              background: trendOpen
+                ? "linear-gradient(135deg,#7c3aed,#ec4899)"
+                : "rgba(124,58,237,0.25)",
+              border: "1px solid rgba(124,58,237,0.4)",
+            }}
+          >
+            <span style={{ fontSize: 16, lineHeight: 1 }}>✨</span>
+          </button>
+
           <NotificationBell onOpenPost={openPostById} />
           <form action={logout}>
             <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
@@ -285,24 +309,37 @@ export function Planner({
           }}
         >
           {isAdmin && !previewAsClient && (
-            <div
-              onClick={() => setGanttOpen(true)}
-              className="w-full cursor-pointer active:scale-95 transition-transform"
-              style={{ padding: "2px", borderRadius: "10px", background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f97316 100%)" }}
-            >
-              <button
-                className="w-full rounded-[8px] py-2 text-sm font-bold text-[#e9d5ff] transition-all"
-                style={{ background: "#0d0620", boxShadow: "inset 0 0 20px rgba(124,58,237,0.15)", border: "none" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "#180d35")}
-                onMouseLeave={e => (e.currentTarget.style.background = "#0d0620")}
+            <div className="flex flex-col gap-1.5">
+              {/* Main chat button */}
+              <div
+                onClick={() => setGanttChatOpen(true)}
+                className="w-full cursor-pointer active:scale-95 transition-transform"
+                style={{ padding: "2px", borderRadius: "10px", background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f97316 100%)" }}
               >
-                <span className="flex items-center justify-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                    <path d="M5 3v4"/><path d="M3 5h4"/><path d="M19 17v4"/><path d="M17 19h4"/>
-                  </svg>
-                  צור גאנט AI
-                </span>
+                <button
+                  className="w-full rounded-[8px] py-2 text-sm font-bold text-[#e9d5ff] transition-all"
+                  style={{ background: "#0d0620", boxShadow: "inset 0 0 20px rgba(124,58,237,0.15)", border: "none" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#180d35")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "#0d0620")}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    תכנון גאנט עם AI
+                  </span>
+                </button>
+              </div>
+
+              {/* Quick generate (old flow) */}
+              <button
+                onClick={() => setGanttOpen(true)}
+                className="w-full py-1.5 text-xs transition-colors"
+                style={{ color: "rgba(167,139,250,0.5)", border: "none", background: "transparent" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "rgba(167,139,250,0.8)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(167,139,250,0.5)")}
+              >
+                ⚡ יצירה מהירה / עריכת פרופיל
               </button>
             </div>
           )}
@@ -564,6 +601,18 @@ export function Planner({
           onDone={load}
         />
       )}
+
+      {ganttChatOpen && (
+        <GanttChatModal
+          clients={clientsList}
+          defaultClientId={clientFilter}
+          defaultMonth={`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`}
+          onClose={() => setGanttChatOpen(false)}
+          onDone={load}
+        />
+      )}
+
+      {trendOpen && <TrendPanel onClose={() => setTrendOpen(false)} />}
 
       {modalOpen && (
         <PostModal
