@@ -10,6 +10,7 @@ type TrendsData = {
   instagram: TrendItem[];
   tiktok: TrendItem[];
   facebook: TrendItem[];
+  twitter: TrendItem[];
   ai_ideas: AIIdea[];
   hot_format: string;
 };
@@ -18,6 +19,7 @@ const PLATFORM_STYLE: Record<string, { bg: string; color: string; icon: string }
   instagram: { bg: "rgba(225,48,108,0.12)", color: "#e1306c", icon: "📸" },
   tiktok:    { bg: "rgba(105,201,208,0.12)", color: "#69c9d0", icon: "🎵" },
   facebook:  { bg: "rgba(24,119,242,0.12)", color: "#1877f2", icon: "👥" },
+  twitter:   { bg: "rgba(0,0,0,0.2)", color: "#e7e9ea", icon: "𝕏" },
 };
 
 function PlatformSection({ label, items, platform }: { label: string; items: TrendItem[]; platform: string }) {
@@ -114,6 +116,7 @@ export function TrendPanel({ onClose }: { onClose: () => void }) {
             <PlatformSection label="אינסטגרם" items={data.instagram ?? []} platform="instagram" />
             <PlatformSection label="טיקטוק"   items={data.tiktok ?? []}    platform="tiktok" />
             <PlatformSection label="פייסבוק"  items={data.facebook ?? []}  platform="facebook" />
+            <PlatformSection label="X / Twitter — AI & Tech" items={data.twitter ?? []} platform="twitter" />
 
             {/* AI ideas */}
             {(data.ai_ideas ?? []).length > 0 && (
