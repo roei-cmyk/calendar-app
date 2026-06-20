@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 const TODAY = new Date().toLocaleDateString("he-IL", {
   weekday: "long", year: "numeric", month: "long", day: "numeric",
