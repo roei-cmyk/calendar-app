@@ -14,7 +14,7 @@ export async function GET() {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 2000,
-      // @ts-expect-error — web_search_20250305 is a valid tool type in the Anthropic API
+      // @ts-ignore
       tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
       messages: [{
         role: "user",
