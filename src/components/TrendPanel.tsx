@@ -50,15 +50,14 @@ export function TrendPanel({ onClose }: { onClose: () => void }) {
   function loadTrends() {
     setLoading(true); setData(null); setError(null);
     fetch("/api/trends")
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
+      .then(async r => {
+        const body = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+        if (!r.ok) throw new Error(body.details ?? body.error ?? `HTTP ${r.status}`);
+        if (body.error) throw new Error(body.details ?? body.error);
+        return body;
       })
-      .then(d => {
-        if (d.error) throw new Error(d.error);
-        setData(d); setLoading(false);
-      })
-      .catch((e) => { setError(`שגיאה: ${e.message}`); setLoading(false); });
+      .then(d => { setData(d); setLoading(false); })
+      .catch((e) => { setError(e.message); setLoading(false); });
   }
 
   useEffect(() => { loadTrends(); }, []);
