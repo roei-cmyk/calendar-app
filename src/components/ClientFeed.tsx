@@ -15,6 +15,16 @@ const PLATFORM_ICON: Record<string, string> = {
   twitter: "𝕏",
 };
 
+const PLATFORM_NAME: Record<string, string> = {
+  facebook: "פייסבוק", instagram: "אינסטגרם",
+  tiktok: "טיקטוק", linkedin: "לינקדאין", twitter: "טוויטר",
+};
+
+const PLATFORM_COLOR: Record<string, string> = {
+  facebook: "#1877f2", instagram: "#e1306c",
+  tiktok: "#010101", linkedin: "#0a66c2", twitter: "#1da1f2",
+};
+
 const STATUS_DOT: Record<string, string> = {
   draft:     "#9ca3af",
   pending:   "#f59e0b",
@@ -89,7 +99,6 @@ export function ClientFeed({
           borderBottom: "0.5px solid rgba(255,255,255,0.12)",
         }}
       >
-        {/* Brand + client name */}
         <div className="flex items-center gap-2.5">
           <span className="text-lg font-extrabold tracking-tight text-white drop-shadow">KNBL</span>
           <span className="h-2 w-2 rounded-full bg-white/60" />
@@ -124,7 +133,6 @@ export function ClientFeed({
           </button>
         </div>
 
-        {/* Logout / back */}
         {onClose ? (
           <button
             onClick={onClose}
@@ -160,7 +168,10 @@ export function ClientFeed({
         </div>
 
         {/* Day cells */}
-        <div className="grid flex-1 grid-cols-7 overflow-hidden" style={{ gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, 1fr)` }}>
+        <div
+          className="grid flex-1 grid-cols-7 overflow-hidden"
+          style={{ gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, 1fr)` }}
+        >
           {days.map(day => {
             const key      = toISODate(day);
             const dayPosts = postsByDate.get(key) ?? [];
@@ -170,7 +181,7 @@ export function ClientFeed({
             return (
               <div
                 key={key}
-                className="flex flex-col gap-0.5 overflow-y-auto border-b border-s p-1"
+                className="flex flex-col gap-1 overflow-y-auto border-b border-s p-1.5"
                 style={{
                   borderColor: "rgba(167,139,250,0.18)",
                   background: today
@@ -197,19 +208,58 @@ export function ClientFeed({
                 {dayPosts.map(p => {
                   const dot  = STATUS_DOT[p.status] ?? STATUS_DOT.draft;
                   const icon = p.platform ? (PLATFORM_ICON[p.platform.toLowerCase()] ?? "") : "";
+                  const isVideo = p.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(p.media_url);
+
                   return (
                     <button
                       key={p.id}
                       onClick={() => setSelected(p)}
                       title={p.title}
-                      className="w-full truncate rounded px-1 py-0.5 text-right text-[9px] font-medium text-white/90 transition hover:brightness-125 active:scale-95"
+                      className="group w-full overflow-hidden rounded-lg text-right transition hover:brightness-110 active:scale-95"
                       style={{
-                        background: `${dot}22`,
-                        borderLeft: `2.5px solid ${dot}`,
+                        background: `${dot}18`,
+                        border: `1px solid ${dot}44`,
+                        boxShadow: `0 1px 4px rgba(0,0,0,0.25)`,
                       }}
                     >
-                      {icon && <span className="mr-0.5 opacity-70" style={{ fontSize: 7 }}>{icon}</span>}
-                      {p.title}
+                      {/* Thumbnail strip */}
+                      {p.media_url && !isVideo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.media_url}
+                          alt=""
+                          className="h-12 w-full object-cover"
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                      )}
+                      {p.media_url && isVideo && (
+                        <div
+                          className="flex h-8 items-center justify-center gap-1 text-[10px]"
+                          style={{ background: "rgba(0,0,0,0.35)", color: "rgba(255,255,255,0.5)" }}
+                        >
+                          ▶ סרטון
+                        </div>
+                      )}
+
+                      {/* Text row */}
+                      <div className="flex items-center gap-1 px-1.5 py-1">
+                        {/* Status dot */}
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: dot }}
+                        />
+                        {/* Platform icon */}
+                        {icon && (
+                          <span className="shrink-0 text-[10px] leading-none">{icon}</span>
+                        )}
+                        {/* Title */}
+                        <span
+                          className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-tight"
+                          style={{ color: "rgba(255,255,255,0.88)" }}
+                        >
+                          {p.title}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -261,10 +311,14 @@ function PostModal({
     fetchComments(post.id).then(setComments).catch(() => {});
   }, [post.id]);
 
-  const isPending   = post.status === "pending";
-  const dot         = STATUS_DOT[post.status] ?? STATUS_DOT.draft;
-  const statusLabel = STATUS_LABEL[post.status] ?? post.status;
-  const platformIcon = post.platform ? (PLATFORM_ICON[post.platform.toLowerCase()] ?? "📱") : null;
+  const isPending    = post.status === "pending";
+  const dot          = STATUS_DOT[post.status] ?? STATUS_DOT.draft;
+  const statusLabel  = STATUS_LABEL[post.status] ?? post.status;
+  const platformKey  = post.platform?.toLowerCase() ?? "";
+  const platformIcon = PLATFORM_ICON[platformKey] ?? null;
+  const platformName = PLATFORM_NAME[platformKey] ?? post.platform ?? null;
+  const platformColor = PLATFORM_COLOR[platformKey] ?? "#6d28d9";
+  const isVideo      = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
 
   async function approve() {
     setBusy(true);
@@ -282,13 +336,11 @@ function PostModal({
 
   async function reject() {
     if (!newComment.trim()) {
-      // focus comment box
       document.getElementById("client-comment-input")?.focus();
       return;
     }
     setBusy(true);
     try {
-      // Send "not approved" comment + notification
       await fetch("/api/client-comment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -336,23 +388,66 @@ function PostModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal header */}
+        {/* ── Media ── */}
+        {post.media_url && (
+          <div className="relative shrink-0 overflow-hidden" style={{ maxHeight: 280 }}>
+            {isVideo ? (
+              <video
+                src={post.media_url}
+                controls
+                className="max-h-[280px] w-full object-contain bg-black"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={post.media_url}
+                alt="תמונת הפוסט"
+                className="w-full object-cover"
+                style={{ maxHeight: 280 }}
+                onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+              />
+            )}
+            {/* Platform badge overlaid on image */}
+            {platformName && (
+              <div
+                className="absolute bottom-2 end-2 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-lg"
+                style={{ background: platformColor }}
+              >
+                {platformIcon && <span>{platformIcon}</span>}
+                {platformName}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Modal header ── */}
         <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3">
-          <div className="flex items-center gap-2">
-            {platformIcon && <span className="text-lg">{platformIcon}</span>}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Platform badge (when no image) */}
+            {!post.media_url && platformName && (
+              <div
+                className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
+                style={{ background: platformColor }}
+              >
+                {platformIcon && <span>{platformIcon}</span>}
+                {platformName}
+              </div>
+            )}
+            {/* Status badge */}
             <span
               className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
               style={{ background: `${dot}22`, color: dot }}
             >
               {statusLabel}
             </span>
+            {/* Date */}
             <span className="text-xs text-gray-400">
               {hebDate(post.scheduled_date)}
               {post.scheduled_time && (
@@ -368,7 +463,7 @@ function PostModal({
           </button>
         </div>
 
-        {/* Scrollable body */}
+        {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto p-5">
           <h2 className="mb-3 text-lg font-bold leading-snug text-gray-900">{post.title}</h2>
 
@@ -378,30 +473,38 @@ function PostModal({
             </p>
           )}
 
-          {/* Approve / Not-approve actions */}
+          {/* ── Approve / Reject actions ── */}
           {isPending && (
-            <div className="mb-5 flex gap-2">
-              <button
-                onClick={approve}
-                disabled={busy}
-                className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
-              >
-                {busy ? "…" : "✓ מאושר"}
-              </button>
-              <button
-                onClick={reject}
-                disabled={busy}
-                className="flex-1 rounded-xl border py-2.5 text-sm font-bold transition hover:bg-red-50 disabled:opacity-50"
-                style={{ borderColor: "#ef4444", color: "#ef4444" }}
-                title="יש לכתוב הערה לפני אי-אישור"
-              >
-                {busy ? "…" : "✗ לא מאושר"}
-              </button>
+            <div className="mb-5">
+              <p className="mb-2 text-xs font-semibold text-gray-500 text-right">
+                האם אתה מאשר את הפוסט הזה?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={approve}
+                  disabled={busy}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
+                >
+                  {busy ? "…" : "✓ מאשר"}
+                </button>
+                <button
+                  onClick={reject}
+                  disabled={busy}
+                  className="flex-1 rounded-xl border py-2.5 text-sm font-bold transition hover:bg-red-50 disabled:opacity-50"
+                  style={{ borderColor: "#ef4444", color: "#ef4444" }}
+                  title="יש לכתוב הערה לפני אי-אישור"
+                >
+                  {busy ? "…" : "✗ לא מאשר"}
+                </button>
+              </div>
+              <p className="mt-1.5 text-center text-[11px] text-gray-400">
+                לאי-אישור — יש לכתוב הערה למטה לפני הלחיצה
+              </p>
             </div>
           )}
 
-          {/* Comments */}
+          {/* ── Comments ── */}
           <div className="border-t border-[#f3f0ff] pt-4">
             <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-gray-400">הערות</p>
 
@@ -423,7 +526,7 @@ function PostModal({
               <input
                 id="client-comment-input"
                 className="flex-1 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed]/20"
-                placeholder={isPending ? "הערה (חובה ללא אישור)" : "הוסף הערה…"}
+                placeholder={isPending ? "הערה (חובה לאי-אישור)" : "הוסף הערה…"}
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendComment()}
