@@ -14,8 +14,7 @@ export async function GET() {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 2000,
-      // @ts-ignore
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }] as Parameters<typeof anthropic.messages.create>[0]["tools"],
       messages: [{
         role: "user",
         content: `היום ${TODAY}. אתה עוזר למשרד פרסום ישראלי (KNBL360) לזהות טרנדים חמים בסושיאל מדיה.

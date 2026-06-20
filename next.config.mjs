@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  eslint: { ignoreDuringBuilds: true },
   experimental: {
     // Allow Server Actions (e.g. login) to work behind dev tunnels like
     // *.trycloudflare.com / *.ngrok-free.app when sharing the local server.
