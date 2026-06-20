@@ -244,7 +244,7 @@ export function Planner({
             borderRight: "0.5px solid rgba(167,139,250,0.18)",
           }}
         >
-          {isAdmin && (
+          {isAdmin && !previewAsClient && (
             <div
               onClick={() => setGanttOpen(true)}
               className="w-full cursor-pointer active:scale-95 transition-transform"
