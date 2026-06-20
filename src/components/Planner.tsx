@@ -179,12 +179,44 @@ export function Planner({
   };
 
   return (
-    <div className="flex h-screen flex-col bg-canvas">
-      {/* Top bar — KNBL purple gradient */}
+    <div
+      className="relative flex h-screen flex-col overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #1a0a5e 0%, #4c1d95 28%, #7c3aed 56%, #a855f7 76%, #c026d3 100%)",
+      }}
+    >
+      {/* Decorative animated background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Spinning outer rings */}
+        <div style={{ position: "absolute", width: 560, height: 560, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.13)", top: -180, left: -180, animation: "spin-slow 12s linear infinite" }} />
+        <div style={{ position: "absolute", width: 380, height: 380, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.09)", top: -100, left: -100, animation: "spin-reverse 8s linear infinite" }} />
+        <div style={{ position: "absolute", width: 660, height: 660, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.1)", bottom: -240, right: -200, animation: "spin-slow 16s linear infinite" }} />
+        <div style={{ position: "absolute", width: 440, height: 440, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.08)", bottom: -120, right: -80, animation: "spin-reverse 10s linear infinite" }} />
+        <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.12)", top: "30%", right: "24%", animation: "spin-slow 7s linear infinite" }} />
+        <div style={{ position: "absolute", width: 140, height: 140, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", top: "55%", left: "40%", animation: "spin-reverse 5s linear infinite" }} />
+
+        {/* Glowing orbs — float */}
+        <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%)", filter: "blur(28px)", top: "-8%", left: "-6%", animation: "float-a 8s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(192,38,211,0.45) 0%, transparent 70%)", filter: "blur(32px)", bottom: "-12%", right: "-10%", animation: "float-b 10s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.55) 0%, transparent 70%)", filter: "blur(22px)", top: "38%", left: "32%", animation: "float-c 6s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(236,72,153,0.45) 0%, transparent 70%)", filter: "blur(18px)", top: "12%", right: "18%", animation: "pulse-glow 2.5s ease-in-out infinite" }} />
+
+        {/* Dot grid */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.13) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          opacity: 0.35,
+        }} />
+      </div>
+
+      {/* Top bar */}
       <header
         className="relative flex items-center justify-between overflow-hidden px-5 py-3"
         style={{
-          background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 60%, #a78bfa 100%)",
+          background: "rgba(0,0,0,0.25)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "0.5px solid rgba(255,255,255,0.12)",
         }}
       >
         <span className="pointer-events-none absolute left-10 top-1 h-8 w-8 rounded-full bg-white/10" />
@@ -242,8 +274,9 @@ export function Planner({
         <aside
           className="hidden w-60 shrink-0 flex-col gap-4 p-4 md:flex"
           style={{
-            background: "rgba(30,18,60,0.97)",
-            borderRight: "0.5px solid rgba(167,139,250,0.18)",
+            background: "rgba(0,0,0,0.28)",
+            backdropFilter: "blur(20px)",
+            borderRight: "0.5px solid rgba(255,255,255,0.1)",
           }}
         >
           {isAdmin && !previewAsClient && (
@@ -260,7 +293,8 @@ export function Planner({
               >
                 <span className="flex items-center justify-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                    <path d="M5 3v4"/><path d="M3 5h4"/><path d="M19 17v4"/><path d="M17 19h4"/>
                   </svg>
                   צור גאנט AI
                 </span>
@@ -400,9 +434,9 @@ export function Planner({
           <div
             className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5"
             style={{
-              background: "rgba(38,20,75,0.92)",
-              borderColor: "rgba(167,139,250,0.25)",
-              backdropFilter: "blur(8px)",
+              background: "rgba(0,0,0,0.2)",
+              borderColor: "rgba(255,255,255,0.12)",
+              backdropFilter: "blur(12px)",
             }}
           >
             <div className="flex items-center gap-1">
@@ -486,7 +520,7 @@ export function Planner({
           </div>
 
           {/* Calendar surface */}
-          <div className="flex-1 overflow-hidden" style={{ background: "#1c0d42" }}>
+          <div className="flex-1 overflow-hidden" style={{ background: "transparent" }}>
             {view === "month" && <MonthView {...viewProps} />}
             {view === "week" && <WeekView {...viewProps} />}
             {view === "day" && <DayView {...viewProps} />}

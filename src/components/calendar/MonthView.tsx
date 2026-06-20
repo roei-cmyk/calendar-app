@@ -29,9 +29,7 @@ export function MonthView({
   return (
     <div
       className="flex h-full flex-col"
-      style={{
-        background: "radial-gradient(ellipse at 30% 40%, #4c1d95 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #3b0f8c 0%, transparent 50%), #1c0d42",
-      }}
+      style={{ background: "transparent" }}
     >
       {/* Weekday headers */}
       <div className="grid grid-cols-7 border-b border-white/10">

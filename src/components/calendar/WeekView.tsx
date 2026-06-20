@@ -27,9 +27,7 @@ export function WeekView({
   return (
     <div
       className="grid h-full grid-cols-7"
-      style={{
-        background: "radial-gradient(ellipse at 30% 40%, #4c1d95 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #3b0f8c 0%, transparent 50%), #1c0d42",
-      }}
+      style={{ background: "transparent" }}
     >
       {days.map((day, i) => {
         const key = toISODate(day);
