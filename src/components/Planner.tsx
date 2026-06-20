@@ -451,10 +451,10 @@ export function Planner({
           >
             <div className="flex items-center gap-1">
               <button
-                onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
+                onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
                 className="rounded-full px-2.5 py-1.5 transition"
                 style={{ color: "#a78bfa" }}
-                aria-label="הקודם"
+                aria-label="הבא"
               >
                 ›
               </button>
@@ -470,10 +470,10 @@ export function Planner({
                 היום
               </button>
               <button
-                onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
+                onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
                 className="rounded-full px-2.5 py-1.5 transition"
                 style={{ color: "#a78bfa" }}
-                aria-label="הבא"
+                aria-label="הקודם"
               >
                 ‹
               </button>

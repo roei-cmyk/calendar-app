@@ -104,7 +104,7 @@ export function ClientFeed({
         {/* Month navigation */}
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setCurrent(d => addMonths(d, -1))}
+            onClick={() => setCurrent(d => addMonths(d, 1))}
             className="rounded-full px-2.5 py-1.5 text-white/60 transition hover:bg-white/10 hover:text-white"
           >
             ›
@@ -117,7 +117,7 @@ export function ClientFeed({
             {formatHebDate(current, "MMMM yyyy")}
           </button>
           <button
-            onClick={() => setCurrent(d => addMonths(d, 1))}
+            onClick={() => setCurrent(d => addMonths(d, -1))}
             className="rounded-full px-2.5 py-1.5 text-white/60 transition hover:bg-white/10 hover:text-white"
           >
             ‹
