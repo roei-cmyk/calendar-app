@@ -18,6 +18,7 @@ import { PostModal } from "@/components/PostModal";
 import { GanttModal } from "@/components/GanttModal";
 import { ClientProfileModal } from "@/components/ClientProfileModal";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ClientFeed } from "@/components/ClientFeed";
 import { logout } from "@/app/login/actions";
 
 const WEEK_OPTS = { weekStartsOn: 0 as const };
@@ -63,6 +64,7 @@ export function Planner({
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
   const [ganttOpen, setGanttOpen] = useState(false);
   const [previewAsClient, setPreviewAsClient] = useState(false);
+  const [clientFeedOpen, setClientFeedOpen] = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
 
@@ -359,23 +361,36 @@ export function Planner({
             </div>
           </div>
 
-          {/* Preview-as-client toggle */}
+          {/* Client view buttons */}
           {isAdmin && clientFilter && (
-            <button
-              onClick={() => setPreviewAsClient(v => !v)}
-              className="mt-auto w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
-              style={previewAsClient ? {
-                background: "rgba(251,191,36,0.12)",
-                border: "0.5px solid rgba(251,191,36,0.35)",
-                color: "rgba(253,230,138,0.9)",
-              } : {
-                background: "rgba(255,255,255,0.04)",
-                border: "0.5px solid rgba(167,139,250,0.2)",
-                color: "rgba(167,139,250,0.55)",
-              }}
-            >
-              {previewAsClient ? "✏️ חזרה למצב עריכה" : `👁 תצוגת ${activeClient?.name ?? "לקוח"}`}
-            </button>
+            <div className="mt-auto flex flex-col gap-2">
+              <button
+                onClick={() => setClientFeedOpen(true)}
+                className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
+                style={{
+                  background: "rgba(124,58,237,0.15)",
+                  border: "0.5px solid rgba(167,139,250,0.4)",
+                  color: "rgba(196,181,253,0.9)",
+                }}
+              >
+                👁 תצוגת לקוח מדויקת
+              </button>
+              <button
+                onClick={() => setPreviewAsClient(v => !v)}
+                className="w-full rounded-xl px-3 py-2 text-xs font-medium transition"
+                style={previewAsClient ? {
+                  background: "rgba(251,191,36,0.12)",
+                  border: "0.5px solid rgba(251,191,36,0.35)",
+                  color: "rgba(253,230,138,0.9)",
+                } : {
+                  background: "rgba(255,255,255,0.03)",
+                  border: "0.5px solid rgba(167,139,250,0.15)",
+                  color: "rgba(167,139,250,0.4)",
+                }}
+              >
+                {previewAsClient ? "✏️ חזרה למצב עריכה" : "עריכה במצב לקוח"}
+              </button>
+            </div>
           )}
         </aside>
 
@@ -488,6 +503,17 @@ export function Planner({
             setProfileClient(null);
           }}
         />
+      )}
+
+      {/* Exact client view overlay */}
+      {clientFeedOpen && activeClient && (
+        <div className="fixed inset-0 z-[9999] overflow-y-auto">
+          <ClientFeed
+            profile={{ ...profile, role: "client", client_id: activeClient.id }}
+            clientName={activeClient.name}
+            onClose={() => setClientFeedOpen(false)}
+          />
+        </div>
       )}
 
       {ganttOpen && (

@@ -43,7 +43,7 @@ function monthLabel(ym: string) {
   return new Date(y, m - 1, 1).toLocaleDateString("he-IL", { month: "long", year: "numeric" });
 }
 
-export function ClientFeed({ profile, clientName }: { profile: Profile; clientName: string }) {
+export function ClientFeed({ profile, clientName, onClose }: { profile: Profile; clientName: string; onClose?: () => void }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -88,11 +88,20 @@ export function ClientFeed({ profile, clientName }: { profile: Profile; clientNa
                 {pending} ממתינים לאישור
               </span>
             )}
-            <form action={logout}>
-              <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
-                יציאה
+            {onClose ? (
+              <button
+                onClick={onClose}
+                className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20"
+              >
+                ← חזרה למנהל
               </button>
-            </form>
+            ) : (
+              <form action={logout}>
+                <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
+                  יציאה
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </header>
