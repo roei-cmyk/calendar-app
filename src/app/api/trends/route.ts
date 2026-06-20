@@ -53,41 +53,20 @@ ${TREND_DEFINITION}
 export async function GET() {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-    try {
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-6",
-        max_tokens: 2000,
-        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }] as Parameters<typeof anthropic.messages.create>[0]["tools"],
-        messages: [{ role: "user", content: PROMPT }],
-      });
-
-      let text = "";
-      for (const block of response.content) {
-        if (block.type === "text") text = block.text;
-      }
-
-      text = text.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
-      const data = JSON.parse(text);
-      return NextResponse.json(data);
-    } catch {
-      // Fallback: Haiku without web search (still returns useful knowledge-based trends)
-      const r2 = await anthropic.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 1500,
-        messages: [{
-          role: "user",
-          content: `היום ${TODAY}. אתה מומחה סושיאל מדיה ישראלי. ${TREND_DEFINITION}
-בהתבסס על הידע שלך, תן טרנדים ספציפיים וריאליסטיים לסוף יוני 2026.
-החזר JSON בלבד:
+    const r = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1500,
+      messages: [{
+        role: "user",
+        content: `היום ${TODAY}. אתה מומחה סושיאל מדיה ישראלי של משרד KNBL360. ${TREND_DEFINITION}
+בהתבסס על הידע שלך, תן טרנדים ספציפיים וריאליסטיים.
+החזר JSON בלבד (ללא טקסט נוסף):
 {"date":"${TODAY}","instagram":[{"trend":"...","tip":"..."},{"trend":"...","tip":"..."},{"trend":"...","tip":"..."}],"tiktok":[{"trend":"...","tip":"..."},{"trend":"...","tip":"..."},{"trend":"...","tip":"..."}],"facebook":[{"trend":"...","tip":"..."},{"trend":"...","tip":"..."},{"trend":"...","tip":"..."}],"twitter":[{"trend":"...","tip":"..."},{"trend":"...","tip":"..."},{"trend":"...","tip":"..."}],"ai_ideas":[{"title":"...","desc":"..."},{"title":"...","desc":"..."}],"hot_format":"..."}`,
-        }],
-      });
-
-      const raw = r2.content[0].type === "text" ? r2.content[0].text : "";
-      const clean = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
-      return NextResponse.json(JSON.parse(clean));
-    }
+      }],
+    });
+    const raw = r.content[0].type === "text" ? r.content[0].text : "";
+    const clean = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+    return NextResponse.json(JSON.parse(clean));
   } catch (err) {
     console.error("Trends API error:", err);
     return NextResponse.json(
