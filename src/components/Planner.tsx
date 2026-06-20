@@ -449,14 +449,14 @@ export function Planner({
               backdropFilter: "blur(12px)",
             }}
           >
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1" dir="ltr">
               <button
-                onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
+                onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
                 className="rounded-full px-2.5 py-1.5 transition"
                 style={{ color: "#a78bfa" }}
-                aria-label="הבא"
+                aria-label="הקודם"
               >
-                ›
+                ‹
               </button>
               <button
                 onClick={() => setCurrent(new Date())}
@@ -469,17 +469,17 @@ export function Planner({
               >
                 היום
               </button>
-              <button
-                onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
-                className="rounded-full px-2.5 py-1.5 transition"
-                style={{ color: "#a78bfa" }}
-                aria-label="הקודם"
-              >
-                ‹
-              </button>
-              <span className="ms-2.5 text-sm font-bold tracking-tight" style={{ color: "#e9d5ff" }}>
+              <span className="mx-2 text-sm font-bold tracking-tight" style={{ color: "#e9d5ff" }}>
                 {rangeLabel}
               </span>
+              <button
+                onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
+                className="rounded-full px-2.5 py-1.5 transition"
+                style={{ color: "#a78bfa" }}
+                aria-label="הבא"
+              >
+                ›
+              </button>
               {loading && (
                 <span className="ms-2 text-xs" style={{ color: "#a78bfa" }}>טוען…</span>
               )}
