@@ -92,8 +92,11 @@ export function GanttChatModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clientId, month, messages: msgs }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text ? JSON.parse(text).error ?? `שגיאת שרת ${res.status}` : `timeout — הבקשה לקחה יותר מדי זמן (${res.status})`);
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "שגיאה");
       if (data.reply) {
         setMessages(prev => [
           ...prev.filter(m => m.content !== "__start__"),

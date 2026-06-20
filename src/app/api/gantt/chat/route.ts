@@ -117,15 +117,15 @@ ${monthLabel} (${daysInMonth} ימים) | ${totalPosts} פוסטים בסך הכ
 
   const isStart = messages.length === 1 && messages[0].content === "__start__";
 
-  const initialPosts = Math.min(totalPosts, 10);
+  const initialPosts = Math.min(totalPosts, 5);
 
   const apiMessages: ChatMessage[] = isStart
-    ? [{ role: "user", content: `צור לי הצעה ראשונית ללוח תוכן ל${monthLabel}. הצע ${initialPosts} פוסטים מגוונים פזורים לאורך החודש. התחל ישירות עם בלוק ה-JSON (---POSTS_START---), סיים עם ---POSTS_END---, ואחריו שורה אחת שמסכמת את האסטרטגיה.` }]
+    ? [{ role: "user", content: `צור לי הצעה ראשונית ללוח תוכן ל${monthLabel}. הצע ${initialPosts} פוסטים מגוונים פזורים לאורך החודש. גוף כל פוסט: 2-3 שורות קצרות בלבד. התחל ישירות עם בלוק ה-JSON (---POSTS_START---), סיים עם ---POSTS_END---, ואחריו שורה אחת שמסכמת.` }]
     : messages;
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 8000,
+    max_tokens: 4000,
     system: systemPrompt,
     messages: apiMessages,
   });
