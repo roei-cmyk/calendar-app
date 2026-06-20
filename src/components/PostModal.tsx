@@ -13,7 +13,7 @@ import {
 } from "@/lib/posts";
 
 const STATUSES: PostStatus[] = ["draft", "pending", "approved", "scheduled", "published"];
-const inputCls = "input";
+const inputCls = "input-dark";
 
 function parsePlatforms(raw: string | null): string[] {
   if (!raw) return [];
@@ -365,13 +365,20 @@ function PostForm({
       onClick={onClose}
     >
       <div
-        className="scroll-thin max-h-[90vh] w-full max-w-lg animate-scale-in overflow-y-auto rounded-2xl border border-line bg-white shadow-modal"
+        className="scroll-thin max-h-[90vh] w-full max-w-lg animate-scale-in overflow-y-auto rounded-2xl"
+        style={{
+          background: "rgba(10, 5, 35, 0.92)",
+          border: "0.5px solid rgba(167,139,250,0.25)",
+          backdropFilter: "blur(24px)",
+          boxShadow: "0 24px 60px rgba(76,29,149,0.5), 0 0 0 0.5px rgba(167,139,250,0.1) inset",
+        }}
         onClick={e => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-white/95 px-5 py-3.5 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3.5"
+          style={{ background: "rgba(0,0,0,0.3)", borderBottom: "0.5px solid rgba(167,139,250,0.2)", backdropFilter: "blur(12px)" }}>
           <div className="flex items-center gap-2.5 min-w-0">
-            <h3 className="truncate font-bold tracking-tight text-ink">
+            <h3 className="truncate font-bold tracking-tight" style={{ color: "rgba(255,255,255,0.95)" }}>
               {canEdit
                 ? (isNew ? "פוסט חדש" : "עריכת פוסט")
                 : (post?.title ?? "פוסט")}
@@ -387,7 +394,10 @@ function PostForm({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl leading-none text-ink-faint transition hover:bg-gray-100 hover:text-ink"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl leading-none transition"
+            style={{ color: "rgba(167,139,250,0.6)" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
           >
             ×
           </button>
@@ -396,7 +406,7 @@ function PostForm({
         {/* ── Body ── */}
         <div className="space-y-4 px-5 py-5">
           {error && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "rgba(239,68,68,0.15)", border: "0.5px solid rgba(239,68,68,0.4)", color: "#fca5a5" }}>
               {error}
             </div>
           )}
@@ -435,7 +445,7 @@ function PostForm({
               </Field>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-ink-muted">
+            <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(196,181,253,0.8)" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>{hebDate}</span>
               {displayTime && <span dir="ltr">· {displayTime.slice(0, 5)}</span>}
@@ -462,9 +472,9 @@ function PostForm({
                       }}
                       className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition"
                       style={{
-                        backgroundColor: selected ? color.bg : "transparent",
-                        color: selected ? color.text : "#6b7280",
-                        borderColor: selected ? color.text + "55" : "#e5e7eb",
+                        backgroundColor: selected ? color.bg + "22" : "rgba(255,255,255,0.05)",
+                        color: selected ? color.text : "rgba(255,255,255,0.4)",
+                        borderColor: selected ? color.text + "88" : "rgba(255,255,255,0.12)",
                       }}
                     >
                       <PlatformIcon platform={p} size={14} />
@@ -512,10 +522,10 @@ function PostForm({
             </div>
 
             {canEdit && imgAiOpen && !form.media_url && (
-              <div className="mb-2 rounded-xl border border-[#ddd6fe] bg-[#f5f3ff] p-3 space-y-2">
-                <p className="text-[11px] font-semibold text-[#4c1d95]">תאר את התמונה שתרצה</p>
+              <div className="mb-2 rounded-xl p-3 space-y-2" style={{ background: "rgba(124,58,237,0.12)", border: "0.5px solid rgba(167,139,250,0.3)" }}>
+                <p className="text-[11px] font-semibold" style={{ color: "#c4b5fd" }}>תאר את התמונה שתרצה</p>
                 <textarea
-                  className="w-full rounded-lg border border-[#c4b5fd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/20 resize-none"
+                  className="input-dark resize-none"
                   rows={2}
                   placeholder='לדוגמה: "תמונת מבצע סוף שבוע לחנות ילדים, עיצוב צבעוני ושמח"'
                   value={imgPrompt}
@@ -536,7 +546,7 @@ function PostForm({
 
             {canEdit ? (
               form.media_url ? (
-                <div className="relative overflow-hidden rounded-xl border border-line bg-gray-50">
+                <div className="relative overflow-hidden rounded-xl" style={{ border: "0.5px solid rgba(167,139,250,0.25)", background: "rgba(255,255,255,0.05)" }}>
                   {isVideo ? (
                     <video src={form.media_url} controls className="max-h-52 w-full object-contain" />
                   ) : (
@@ -555,7 +565,7 @@ function PostForm({
                   )}
                 </div>
               ) : (
-                <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-canvas p-6 transition hover:border-brand/50 hover:bg-brand-lighter/20">
+                <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl p-6 transition" style={{ border: "1.5px dashed rgba(167,139,250,0.35)", background: "rgba(124,58,237,0.06)" }}>
                   <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} disabled={uploading} />
                   {uploading ? (
                     <>
@@ -565,15 +575,15 @@ function PostForm({
                   ) : (
                     <>
                       <span className="text-3xl">🖼️</span>
-                      <span className="text-sm font-medium text-ink-muted group-hover:text-brand">לחץ לבחירת קובץ</span>
-                      <span className="text-xs text-ink-faint">תמונות וסרטונים עד 50MB</span>
+                      <span className="text-sm font-medium transition" style={{ color: "rgba(167,139,250,0.7)" }}>לחץ לבחירת קובץ</span>
+                      <span className="text-xs" style={{ color: "rgba(167,139,250,0.4)" }}>תמונות וסרטונים עד 50MB</span>
                     </>
                   )}
                 </label>
               )
             ) : (
               mediaUrl ? (
-                <div className="overflow-hidden rounded-xl border border-line bg-gray-50">
+                <div className="overflow-hidden rounded-xl" style={{ border: "0.5px solid rgba(167,139,250,0.2)", background: "rgba(255,255,255,0.04)" }}>
                   {isVideo ? (
                     <video src={mediaUrl} controls className="max-h-64 w-full object-contain" />
                   ) : (
@@ -607,10 +617,10 @@ function PostForm({
             </div>
 
             {canEdit && aiOpen && (
-              <div className="mb-2 rounded-xl border border-[#ddd6fe] bg-[#f5f3ff] p-3 space-y-2">
-                <p className="text-[11px] font-semibold text-[#4c1d95]">מה לשנות?</p>
+              <div className="mb-2 rounded-xl p-3 space-y-2" style={{ background: "rgba(124,58,237,0.12)", border: "0.5px solid rgba(167,139,250,0.3)" }}>
+                <p className="text-[11px] font-semibold" style={{ color: "#c4b5fd" }}>מה לשנות?</p>
                 <textarea
-                  className="w-full rounded-lg border border-[#c4b5fd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/20 resize-none"
+                  className="input-dark resize-none"
                   rows={2}
                   placeholder='לדוגמה: "קצר ל-3 משפטים", "תן טון יותר עירוני", "הוסף קריאה לפעולה"'
                   value={aiInstructions}
@@ -619,10 +629,10 @@ function PostForm({
                 />
                 {aiError && <p className="text-xs text-rose-600">{aiError}</p>}
                 {aiSuggestion && (
-                  <div className="rounded-lg border border-[#c4b5fd] bg-white p-3 space-y-2">
-                    <p className="text-[10px] font-bold text-[#7c3aed] uppercase tracking-wide">הצעת AI</p>
-                    <p className="text-sm font-bold text-ink">{aiSuggestion.title}</p>
-                    {aiSuggestion.body && <p className="text-sm text-ink-muted whitespace-pre-wrap">{aiSuggestion.body}</p>}
+                  <div className="rounded-lg p-3 space-y-2" style={{ background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(167,139,250,0.25)" }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#a78bfa" }}>הצעת AI</p>
+                    <p className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.9)" }}>{aiSuggestion.title}</p>
+                    {aiSuggestion.body && <p className="text-sm whitespace-pre-wrap" style={{ color: "rgba(196,181,253,0.8)" }}>{aiSuggestion.body}</p>}
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={acceptAiSuggestion}
@@ -633,7 +643,8 @@ function PostForm({
                       </button>
                       <button
                         onClick={() => setAiSuggestion(null)}
-                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
+                        className="rounded-lg px-3 py-1.5 text-xs font-medium transition"
+                        style={{ background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.5)" }}
                       >
                         בטל
                       </button>
@@ -657,11 +668,11 @@ function PostForm({
               <textarea className={`${inputCls} min-h-[96px] resize-y`} value={form.body ?? ""} onChange={e => update("body", e.target.value)} />
             ) : (
               post?.body ? (
-                <p className="rounded-lg border border-line bg-canvas px-3 py-2.5 text-sm leading-relaxed text-ink">
+                <p className="rounded-lg px-3 py-2.5 text-sm leading-relaxed" style={{ background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(167,139,250,0.2)", color: "rgba(255,255,255,0.85)" }}>
                   {post.body}
                 </p>
               ) : (
-                <span className="text-sm text-ink-faint">—</span>
+                <span className="text-sm" style={{ color: "rgba(167,139,250,0.4)" }}>—</span>
               )
             )}
           </div>
@@ -696,10 +707,10 @@ function PostForm({
                 </button>
               </div>
               {changeMode && (
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                  <p className="mb-2 text-xs font-semibold text-rose-700">מה צריך לשנות?</p>
+                <div className="rounded-2xl p-4" style={{ background: "rgba(239,68,68,0.1)", border: "0.5px solid rgba(239,68,68,0.35)" }}>
+                  <p className="mb-2 text-xs font-semibold" style={{ color: "#fca5a5" }}>מה צריך לשנות?</p>
                   <textarea
-                    className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                    className="input-dark"
                     rows={3}
                     placeholder="תאר מה תרצה לשנות בפוסט..."
                     value={changeText}
@@ -719,16 +730,16 @@ function PostForm({
 
           {/* ─ Comments ─ */}
           {!isNew && (
-            <div className="border-t border-line pt-4">
-              <h4 className="mb-2.5 text-sm font-semibold text-ink">
+            <div className="pt-4" style={{ borderTop: "0.5px solid rgba(167,139,250,0.2)" }}>
+              <h4 className="mb-2.5 text-sm font-semibold" style={{ color: "rgba(255,255,255,0.85)" }}>
                 {canEdit ? `תגובות (${comments.length})` : `הערות ${comments.length > 0 ? `(${comments.length})` : ""}`}
               </h4>
               <div className="mb-3 space-y-2">
-                {comments.length === 0 && <p className="text-xs text-ink-faint">אין תגובות עדיין</p>}
+                {comments.length === 0 && <p className="text-xs" style={{ color: "rgba(167,139,250,0.4)" }}>אין תגובות עדיין</p>}
                 {comments.map(c => (
-                  <div key={c.id} className="rounded-lg border border-line bg-gray-50 px-3 py-2 text-sm">
-                    <p className="text-ink">{c.body}</p>
-                    <p className="mt-1 text-[10px] text-ink-faint" dir="ltr">{new Date(c.created_at).toLocaleString("he-IL")}</p>
+                  <div key={c.id} className="rounded-lg px-3 py-2 text-sm" style={{ background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(167,139,250,0.18)" }}>
+                    <p style={{ color: "rgba(255,255,255,0.85)" }}>{c.body}</p>
+                    <p className="mt-1 text-[10px]" dir="ltr" style={{ color: "rgba(167,139,250,0.4)" }}>{new Date(c.created_at).toLocaleString("he-IL")}</p>
                   </div>
                 ))}
               </div>
@@ -758,10 +769,11 @@ function PostForm({
 
         {/* ── Footer ── */}
         {canEdit && (
-          <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur">
+          <div className="sticky bottom-0 flex items-center justify-between px-5 py-3.5"
+            style={{ background: "rgba(0,0,0,0.3)", borderTop: "0.5px solid rgba(167,139,250,0.2)", backdropFilter: "blur(12px)" }}>
             <div>
               {!isNew && (
-                <button onClick={handleDelete} disabled={saving} className="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
+                <button onClick={handleDelete} disabled={saving} className="rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50" style={{ color: "#fca5a5" }}>
                   מחיקה
                 </button>
               )}
@@ -782,7 +794,7 @@ function PostForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-ink-muted">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium" style={{ color: "rgba(167,139,250,0.7)" }}>{label}</span>
       {children}
     </label>
   );

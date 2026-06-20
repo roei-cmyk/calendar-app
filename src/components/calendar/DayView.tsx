@@ -16,7 +16,7 @@ export function DayView({
   postsByDate: Map<string, Post[]>;
   clientsById: Map<string, Client>;
   canEdit: boolean;
-  onSelectPost: (post: Post) => void;
+  onSelectPost?: (post: Post) => void;
   onCreateForDate: (date: string) => void;
   // accepted for prop-spread parity with Month/Week views (unused here)
   onMovePost?: (postId: string, newDate: string) => void;
@@ -55,7 +55,7 @@ export function DayView({
               key={p.id}
               post={p}
               client={clientsById.get(p.client_id)}
-              onClick={() => onSelectPost(p)}
+              onClick={onSelectPost ? () => onSelectPost(p) : undefined}
             />
           ))
         )}

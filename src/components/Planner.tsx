@@ -173,7 +173,7 @@ export function Planner({
     postsByDate,
     clientsById,
     canEdit: effectiveCanEdit,
-    onSelectPost: openPost,
+    onSelectPost: previewAsClient ? undefined : openPost,
     onCreateForDate: effectiveCanEdit ? openCreate : () => {},
     onMovePost: effectiveCanEdit ? handleMovePost : undefined,
   };
@@ -182,32 +182,37 @@ export function Planner({
     <div
       className="relative flex h-screen flex-col overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #1a0a5e 0%, #4c1d95 28%, #7c3aed 56%, #a855f7 76%, #c026d3 100%)",
+        background: "linear-gradient(135deg, #0f0630 0%, #2d1270 30%, #4c1d95 60%, #6d28d9 100%)",
       }}
     >
       {/* Decorative animated background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Spinning outer rings */}
-        <div style={{ position: "absolute", width: 560, height: 560, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.13)", top: -180, left: -180, animation: "spin-slow 12s linear infinite" }} />
-        <div style={{ position: "absolute", width: 380, height: 380, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.09)", top: -100, left: -100, animation: "spin-reverse 8s linear infinite" }} />
-        <div style={{ position: "absolute", width: 660, height: 660, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.1)", bottom: -240, right: -200, animation: "spin-slow 16s linear infinite" }} />
-        <div style={{ position: "absolute", width: 440, height: 440, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.08)", bottom: -120, right: -80, animation: "spin-reverse 10s linear infinite" }} />
-        <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.12)", top: "30%", right: "24%", animation: "spin-slow 7s linear infinite" }} />
-        <div style={{ position: "absolute", width: 140, height: 140, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", top: "55%", left: "40%", animation: "spin-reverse 5s linear infinite" }} />
-
-        {/* Glowing orbs — float */}
-        <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%)", filter: "blur(28px)", top: "-8%", left: "-6%", animation: "float-a 8s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(192,38,211,0.45) 0%, transparent 70%)", filter: "blur(32px)", bottom: "-12%", right: "-10%", animation: "float-b 10s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.55) 0%, transparent 70%)", filter: "blur(22px)", top: "38%", left: "32%", animation: "float-c 6s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(236,72,153,0.45) 0%, transparent 70%)", filter: "blur(18px)", top: "12%", right: "18%", animation: "pulse-glow 2.5s ease-in-out infinite" }} />
-
-        {/* Dot grid */}
+        {/* Dot grid — static */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.13) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-          opacity: 0.35,
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)",
+          backgroundSize: "36px 36px",
+          opacity: 0.4,
         }} />
+
+        {/* Floating geometric circles — crisp outlines */}
+        <div style={{ position: "absolute", width: 180, height: 180, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.22)", top: "8%", left: "12%", animation: "orb-a 12s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 90, height: 90, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.18)", top: "8%", left: "12%", animation: "orb-a 12s ease-in-out infinite" }} />
+
+        <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.18)", bottom: "10%", right: "8%", animation: "orb-b 15s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 110, height: 110, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.14)", bottom: "10%", right: "8%", animation: "orb-b 15s ease-in-out infinite" }} />
+
+        <div style={{ position: "absolute", width: 140, height: 140, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.16)", top: "45%", left: "55%", animation: "orb-c 9s ease-in-out infinite" }} />
+
+        <div style={{ position: "absolute", width: 100, height: 100, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", top: "20%", right: "22%", animation: "orb-a 10s ease-in-out infinite 2s" }} />
+
+        <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.12)", bottom: "25%", left: "15%", animation: "orb-c 13s ease-in-out infinite 1s" }} />
+
+        <div style={{ position: "absolute", width: 60, height: 60, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.25)", top: "60%", right: "35%", animation: "orb-b 8s ease-in-out infinite 3s" }} />
+
+        {/* Large anchor rings at corners — also floating */}
+        <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.08)", top: -200, left: -200, animation: "orb-a 20s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 580, height: 580, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.07)", bottom: -250, right: -220, animation: "orb-b 24s ease-in-out infinite" }} />
       </div>
 
       {/* Top bar */}

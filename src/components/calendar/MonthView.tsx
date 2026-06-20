@@ -19,7 +19,7 @@ export function MonthView({
   postsByDate: Map<string, Post[]>;
   clientsById: Map<string, Client>;
   canEdit: boolean;
-  onSelectPost: (post: Post) => void;
+  onSelectPost?: (post: Post) => void;
   onCreateForDate: (date: string) => void;
   onMovePost?: (postId: string, newDate: string) => void;
 }) {
@@ -111,7 +111,7 @@ export function MonthView({
                     key={p.id}
                     post={p}
                     client={clientsById.get(p.client_id)}
-                    onClick={() => onSelectPost(p)}
+                    onClick={onSelectPost ? () => onSelectPost(p) : undefined}
                     compact
                     draggable={canEdit && !!onMovePost}
                     onDragStart={(e) =>
