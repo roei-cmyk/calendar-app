@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
 export const maxDuration = 60;
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+export const dynamic = "force-dynamic";
 
 const PROMPT = (clientName: string, sources: string, searchQuery: string) => `אתה יועץ שיווק דיגיטלי ישראלי מוביל. חקור את העסק "${clientName}" וספק ניתוח מעמיק לצורך יצירת תוכן שיווקי.
 ${sources ? `מקורות: ${sources}` : ""}
@@ -24,6 +23,7 @@ ${sources ? `מקורות: ${sources}` : ""}
 חפש: ${searchQuery}`;
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
   try {
     const { clientName, websiteUrl, instagramHandle, facebookUrl } = await req.json() as {
       clientName: string;
