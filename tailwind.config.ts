@@ -12,9 +12,9 @@ const config: Config = {
         sans: ["var(--font-rubik)", "system-ui", "sans-serif"],
       },
       colors: {
-        canvas: "#f5f3ff",
-        sidebar: "#1e1b4b",
-        "sidebar-light": "#2e2a6e",
+        canvas: "#ffffff",
+        sidebar: "#fafafa",
+        "sidebar-light": "#f3f4f6",
         line: "#ddd6fe",
         "line-strong": "#c4b5fd",
         brand: {

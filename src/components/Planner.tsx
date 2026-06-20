@@ -179,43 +179,46 @@ export function Planner({
   };
 
   return (
-    <div className="flex h-screen flex-col bg-canvas">
-      {/* Top bar — KNBL purple gradient */}
-      <header
-        className="relative flex items-center justify-between overflow-hidden px-5 py-3"
-        style={{
-          background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 60%, #a78bfa 100%)",
-        }}
-      >
-        <span className="pointer-events-none absolute left-10 top-1 h-8 w-8 rounded-full bg-white/10" />
-        <span className="pointer-events-none absolute left-24 bottom-0 h-5 w-5 rounded-full bg-white/8" />
-        <span className="pointer-events-none absolute right-64 top-1 h-4 w-4 rounded-full bg-white/10" />
+    <div className="relative flex h-screen flex-col overflow-hidden bg-white">
+      {/* Floating background bubbles */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="bubble bubble-a" style={{ width: 500, height: 500, top: -100, right: -100, background: "radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%)" }} />
+        <div className="bubble bubble-b" style={{ width: 400, height: 400, bottom: 100, left: -80, background: "radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)" }} />
+        <div className="bubble bubble-c" style={{ width: 300, height: 300, top: "40%", left: "40%", background: "radial-gradient(circle, rgba(196,181,253,0.1) 0%, transparent 70%)" }} />
+      </div>
 
-        <div className="relative flex items-center gap-2.5">
-          <span className="text-lg font-extrabold tracking-tight text-white drop-shadow">
+      {/* Top bar — clean white */}
+      <header
+        className="relative z-10 flex items-center justify-between border-b px-5 py-3 bg-white"
+        style={{ borderColor: "rgba(124,58,237,0.1)", boxShadow: "0 1px 12px rgba(124,58,237,0.06)" }}
+      >
+        <div className="flex items-center gap-2.5">
+          <span
+            className="text-xl font-black tracking-tight"
+            style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+          >
             KNBL
           </span>
-          <span className="h-2 w-2 rounded-full bg-white/80" />
-          <span className="text-sm font-medium text-white/60">לוח תוכן</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-[#c4b5fd]" />
+          <span className="text-sm font-medium text-[#9ca3af]">לוח תוכן</span>
         </div>
 
-        <div className="relative flex items-center gap-3">
+        <div className="flex items-center gap-3">
           <div className="hidden items-center gap-2.5 sm:flex">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white ring-1 ring-white/30">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
+            >
               {(profile.full_name ?? "מ").trim().charAt(0)}
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-semibold text-white">
-                {profile.full_name ?? "משתמש"}
-              </div>
-              <div className="text-[11px] text-white/50">
-                {isAdmin ? "מנהל מערכת" : "לקוח"}
-              </div>
+              <div className="text-sm font-semibold text-[#1e1b4b]">{profile.full_name ?? "משתמש"}</div>
+              <div className="text-[11px] text-[#9ca3af]">{isAdmin ? "מנהל מערכת" : "לקוח"}</div>
             </div>
           </div>
           <NotificationBell onOpenPost={openPostById} />
           <form action={logout}>
-            <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
+            <button className="rounded-full border border-[#e5e7eb] px-3 py-1.5 text-sm font-medium text-[#6b7280] transition hover:border-[#c4b5fd] hover:text-[#7c3aed]">
               יציאה
             </button>
           </form>
@@ -240,10 +243,11 @@ export function Planner({
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside
-          className="hidden w-60 shrink-0 flex-col gap-4 p-4 md:flex"
+          className="relative z-10 hidden w-60 shrink-0 flex-col gap-4 overflow-y-auto p-4 md:flex"
           style={{
-            background: "rgba(30,18,60,0.97)",
-            borderRight: "0.5px solid rgba(167,139,250,0.18)",
+            background: "rgba(255,255,255,0.9)",
+            borderRight: "1px solid rgba(124,58,237,0.08)",
+            backdropFilter: "blur(12px)",
           }}
         >
           {isAdmin && !previewAsClient && (
@@ -269,87 +273,48 @@ export function Planner({
           )}
 
           <div>
-            <h3
-              className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.15em]"
-              style={{ color: "rgba(167,139,250,0.35)" }}
-            >
+            <h3 className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9ca3af]">
               לקוחות
             </h3>
-            <div className="flex flex-col overflow-hidden rounded-xl" style={{ border: "0.5px solid rgba(167,139,250,0.08)" }}>
+            <div className="flex flex-col gap-0.5">
               {isAdmin && (
                 <button
                   onClick={() => handleClientFilter(null)}
-                  className="flex w-full items-stretch text-right text-sm transition hover:bg-white/[0.05]"
-                  style={{ background: clientFilter === null ? "rgba(124,58,237,0.14)" : undefined }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition"
+                  style={{
+                    background: clientFilter === null ? "rgba(124,58,237,0.08)" : "transparent",
+                    color: clientFilter === null ? "#7c3aed" : "#6b7280",
+                    fontWeight: clientFilter === null ? 700 : 400,
+                  }}
                 >
-                  <div style={{
-                    width: 3,
-                    flexShrink: 0,
-                    background: clientFilter === null
-                      ? "linear-gradient(180deg,#c084fc,#7c3aed)"
-                      : "#7c3aed",
-                    opacity: clientFilter === null ? 1 : 0.2,
-                    boxShadow: clientFilter === null ? "2px 0 10px rgba(124,58,237,0.7)" : undefined,
-                  }} />
-                  <div style={{ flex: 1, padding: "10px 12px" }}>
-                    <div style={{
-                      fontSize: 13,
-                      fontWeight: clientFilter === null ? 700 : 400,
-                      color: clientFilter === null ? "#f5f3ff" : "rgba(255,255,255,0.3)",
-                    }}>
-                      כל הלקוחות
-                    </div>
-                  </div>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md text-[10px]" style={{ background: "rgba(124,58,237,0.1)", color: "#7c3aed" }}>✦</span>
+                  כל הלקוחות
                 </button>
               )}
               {clientsList.map((c) => {
                 const active = clientFilter === c.id;
                 return (
-                  <div
-                    key={c.id}
-                    className="group/client flex w-full items-stretch"
-                    style={{
-                      borderTop: "0.5px solid rgba(255,255,255,0.04)",
-                      background: active ? "rgba(124,58,237,0.14)" : undefined,
-                    }}
-                  >
+                  <div key={c.id} className="group/client flex items-center gap-1">
                     <button
                       onClick={() => handleClientFilter(c.id)}
-                      className="flex flex-1 items-stretch text-right text-sm transition hover:bg-white/[0.05]"
+                      className="flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-right text-sm transition hover:bg-[#f5f3ff]"
+                      style={{
+                        background: active ? "rgba(124,58,237,0.08)" : "transparent",
+                        color: active ? "#4c1d95" : "#6b7280",
+                        fontWeight: active ? 700 : 400,
+                      }}
                     >
-                      <div style={{
-                        width: 3,
-                        flexShrink: 0,
-                        background: c.color,
-                        opacity: active ? 1 : 0.3,
-                        boxShadow: active ? `2px 0 12px ${c.color}` : undefined,
-                      }} />
-                      <div style={{ flex: 1, padding: "10px 12px" }}>
-                        <div
-                          className="truncate"
-                          style={{
-                            fontSize: 13,
-                            fontWeight: active ? 700 : 400,
-                            color: active ? "#f5f3ff" : "rgba(255,255,255,0.32)",
-                          }}
-                        >
-                          {c.name}
-                        </div>
-                        {active && (
-                          <div style={{ fontSize: 9, color: "rgba(167,139,250,0.5)", marginTop: 2 }}>
-                            {c.business_description ? "✓ יש פרופיל" : "אין פרופיל"}
-                          </div>
-                        )}
-                      </div>
+                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: c.color, boxShadow: active ? `0 0 6px ${c.color}` : undefined }} />
+                      <span className="truncate">{c.name}</span>
                     </button>
                     {isAdmin && (
                       <button
                         onClick={() => setProfileClient(c)}
-                        className="flex items-center px-2 opacity-0 transition group-hover/client:opacity-100"
-                        style={{ color: "rgba(167,139,250,0.6)" }}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md opacity-0 transition hover:bg-[#ede9fe] group-hover/client:opacity-100"
+                        style={{ color: "#7c3aed" }}
                         title="עריכת פרופיל לקוח"
                       >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
@@ -368,9 +333,9 @@ export function Planner({
                 onClick={() => setClientFeedOpen(true)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
                 style={{
-                  background: "rgba(124,58,237,0.15)",
-                  border: "0.5px solid rgba(167,139,250,0.4)",
-                  color: "rgba(196,181,253,0.9)",
+                  background: "rgba(124,58,237,0.08)",
+                  border: "1px solid rgba(124,58,237,0.2)",
+                  color: "#7c3aed",
                 }}
               >
                 👁 תצוגת לקוח מדויקת
@@ -379,13 +344,13 @@ export function Planner({
                 onClick={() => setPreviewAsClient(v => !v)}
                 className="w-full rounded-xl px-3 py-2 text-xs font-medium transition"
                 style={previewAsClient ? {
-                  background: "rgba(251,191,36,0.12)",
-                  border: "0.5px solid rgba(251,191,36,0.35)",
-                  color: "rgba(253,230,138,0.9)",
+                  background: "rgba(251,191,36,0.08)",
+                  border: "1px solid rgba(251,191,36,0.3)",
+                  color: "#d97706",
                 } : {
-                  background: "rgba(255,255,255,0.03)",
-                  border: "0.5px solid rgba(167,139,250,0.15)",
-                  color: "rgba(167,139,250,0.4)",
+                  background: "transparent",
+                  border: "1px solid #e5e7eb",
+                  color: "#9ca3af",
                 }}
               >
                 {previewAsClient ? "✏️ חזרה למצב עריכה" : "עריכה במצב לקוח"}
@@ -395,70 +360,49 @@ export function Planner({
         </aside>
 
         {/* Main */}
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <main className="relative z-10 flex flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
           <div
-            className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5"
-            style={{
-              background: "rgba(38,20,75,0.92)",
-              borderColor: "rgba(167,139,250,0.25)",
-              backdropFilter: "blur(8px)",
-            }}
+            className="flex flex-wrap items-center justify-between gap-2 border-b bg-white/80 px-4 py-2.5 backdrop-blur-sm"
+            style={{ borderColor: "rgba(124,58,237,0.08)" }}
           >
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, -1))}
-                className="rounded-full px-2.5 py-1.5 transition"
-                style={{ color: "#a78bfa" }}
+                className="rounded-full px-2.5 py-1.5 text-lg text-[#9ca3af] transition hover:text-[#7c3aed]"
                 aria-label="הקודם"
               >
                 ›
               </button>
               <button
                 onClick={() => setCurrent(new Date())}
-                className="rounded-full border px-3.5 py-1.5 text-sm font-semibold transition"
-                style={{
-                  borderColor: "rgba(167,139,250,0.4)",
-                  background: "rgba(124,58,237,0.2)",
-                  color: "#c4b5fd",
-                }}
+                className="rounded-full border px-3.5 py-1.5 text-sm font-semibold transition hover:border-[#7c3aed] hover:text-[#7c3aed]"
+                style={{ borderColor: "#e5e7eb", color: "#374151" }}
               >
                 היום
               </button>
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
-                className="rounded-full px-2.5 py-1.5 transition"
-                style={{ color: "#a78bfa" }}
+                className="rounded-full px-2.5 py-1.5 text-lg text-[#9ca3af] transition hover:text-[#7c3aed]"
                 aria-label="הבא"
               >
                 ‹
               </button>
-              <span className="ms-2.5 text-sm font-bold tracking-tight" style={{ color: "#e9d5ff" }}>
+              <span className="ms-2.5 text-sm font-bold tracking-tight text-[#1e1b4b]">
                 {rangeLabel}
               </span>
-              {loading && (
-                <span className="ms-2 text-xs" style={{ color: "#a78bfa" }}>טוען…</span>
-              )}
+              {loading && <span className="ms-2 text-xs text-[#a78bfa]">טוען…</span>}
             </div>
 
             <div className="flex items-center gap-2">
               <select
                 value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as PostStatus | "all")
-                }
-                className="rounded-full border px-3 py-1.5 text-sm outline-none transition"
-                style={{
-                  borderColor: "rgba(167,139,250,0.3)",
-                  background: "rgba(124,58,237,0.15)",
-                  color: "#c4b5fd",
-                }}
+                onChange={(e) => setStatusFilter(e.target.value as PostStatus | "all")}
+                className="rounded-full border border-[#e5e7eb] px-3 py-1.5 text-sm text-[#374151] outline-none transition focus:border-[#7c3aed]"
               >
                 <option value="all">כל הסטטוסים</option>
                 {(Object.keys(POST_STATUS_LABELS) as PostStatus[]).map((s) => (
-                  <option key={s} value={s}>
-                    {POST_STATUS_LABELS[s]}
-                  </option>
+                  <option key={s} value={s}>{POST_STATUS_LABELS[s]}</option>
                 ))}
               </select>
 
@@ -473,9 +417,9 @@ export function Planner({
                       borderColor: "#7c3aed",
                       color: "white",
                     } : {
-                      borderColor: "rgba(167,139,250,0.3)",
+                      borderColor: "#e5e7eb",
                       background: "transparent",
-                      color: "#a78bfa",
+                      color: "#6b7280",
                     }}
                   >
                     {VIEW_LABELS[v]}
@@ -486,7 +430,7 @@ export function Planner({
           </div>
 
           {/* Calendar surface */}
-          <div className="flex-1 overflow-hidden" style={{ background: "#1c0d42" }}>
+          <div className="flex-1 overflow-hidden bg-white">
             {view === "month" && <MonthView {...viewProps} />}
             {view === "week" && <WeekView {...viewProps} />}
             {view === "day" && <DayView {...viewProps} />}

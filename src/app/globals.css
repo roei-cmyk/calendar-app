@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #f5f3ff;
+  --background: #ffffff;
   --foreground: #1e1b4b;
 }
 
@@ -36,10 +36,10 @@ select {
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-[#c4b5fd] bg-white px-3 py-2 text-sm
+    @apply w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm
       text-[#1e1b4b] outline-none transition placeholder:text-[#9ca3af]
       focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/20
-      disabled:cursor-default disabled:bg-[#ede9fe]/50 disabled:text-[#6b7280];
+      disabled:cursor-default disabled:bg-[#f9fafb] disabled:text-[#6b7280];
   }
 
   .btn-primary {
@@ -50,26 +50,42 @@ select {
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm
-      font-medium text-white/70 transition hover:bg-white/10 hover:text-white;
+      font-medium text-[#6b7280] transition hover:bg-[#f3f4f6] hover:text-[#1e1b4b];
   }
 
   .panel {
-    @apply rounded-2xl border border-[#ddd6fe] bg-white;
-    box-shadow: 0 6px 20px -6px rgb(124 58 237 / 0.12), 0 2px 8px -3px rgb(76 29 149 / 0.08);
+    @apply rounded-2xl border border-[#f3f0ff] bg-white;
+    box-shadow: 0 4px 24px -4px rgba(124, 58, 237, 0.08), 0 1px 4px rgba(0,0,0,0.04);
   }
 }
 
-.scroll-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Floating bubble animations */
+@keyframes bubble-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -40px) scale(1.04); }
+  66%       { transform: translate(-20px, -20px) scale(0.97); }
 }
-.scroll-thin::-webkit-scrollbar-track {
-  background: transparent;
+@keyframes bubble-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(-40px, 30px) scale(1.06); }
+  70%       { transform: translate(20px, -10px) scale(0.95); }
 }
-.scroll-thin::-webkit-scrollbar-thumb {
-  background: #c4b5fd;
+@keyframes bubble-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, 50px) scale(1.03); }
+}
+
+.bubble {
+  position: absolute;
   border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(60px);
 }
-.scroll-thin::-webkit-scrollbar-thumb:hover {
-  background: #a78bfa;
-}
+.bubble-a { animation: bubble-a 18s ease-in-out infinite; }
+.bubble-b { animation: bubble-b 24s ease-in-out infinite; }
+.bubble-c { animation: bubble-c 20s ease-in-out infinite; }
+
+.scroll-thin::-webkit-scrollbar { width: 5px; height: 5px; }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 9999px; }
+.scroll-thin::-webkit-scrollbar-thumb:hover { background: #c4b5fd; }
