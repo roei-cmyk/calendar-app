@@ -1,216 +1,357 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { addMonths, isSameMonth, isToday } from "date-fns";
 import type { Comment, Post, Profile } from "@/lib/types";
-import { fetchPosts, updatePost, addComment, fetchComments } from "@/lib/posts";
+import { monthGridDays, toISODate, formatHebDate, HEB_WEEKDAY_SHORT } from "@/lib/date";
+import { fetchPosts, fetchComments } from "@/lib/posts";
 import { logout } from "@/app/login/actions";
 
 const PLATFORM_ICON: Record<string, string> = {
-  פייסבוק: "📘", facebook: "📘",
-  אינסטגרם: "📸", instagram: "📸",
-  טיקטוק: "🎵", tiktok: "🎵",
-  לינקדאין: "💼", linkedin: "💼",
-  יוטיוב: "▶️", youtube: "▶️",
+  facebook: "📘", פייסבוק: "📘",
+  instagram: "📸", אינסטגרם: "📸",
+  tiktok: "🎵", טיקטוק: "🎵",
+  linkedin: "💼", לינקדאין: "💼",
+  twitter: "𝕏",
 };
 
-const STATUS = {
-  draft:     { label: "טיוטה",          cls: "bg-gray-100 text-gray-500" },
-  pending:   { label: "ממתין לאישור",   cls: "bg-amber-100 text-amber-700" },
-  approved:  { label: "✓ מאושר",        cls: "bg-emerald-100 text-emerald-700" },
-  scheduled: { label: "מתוזמן",         cls: "bg-sky-100 text-sky-700" },
-  published: { label: "פורסם",          cls: "bg-violet-100 text-violet-700" },
+const STATUS_DOT: Record<string, string> = {
+  draft:     "#9ca3af",
+  pending:   "#f59e0b",
+  approved:  "#10b981",
+  scheduled: "#3b82f6",
+  published: "#8b5cf6",
 };
 
-function hebDate(date: string) {
-  return new Date(date).toLocaleDateString("he-IL", {
-    weekday: "long", day: "numeric", month: "long",
-  });
-}
+const STATUS_LABEL: Record<string, string> = {
+  draft:     "טיוטה",
+  pending:   "ממתין לאישור",
+  approved:  "✓ מאושר",
+  scheduled: "מתוזמן",
+  published: "פורסם",
+};
 
-function groupByMonth(posts: Post[]) {
-  const map = new Map<string, Post[]>();
-  for (const p of posts) {
-    const key = p.scheduled_date.slice(0, 7); // YYYY-MM
-    const arr = map.get(key) ?? [];
-    arr.push(p);
-    map.set(key, arr);
-  }
-  return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
-}
-
-function monthLabel(ym: string) {
-  const [y, m] = ym.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("he-IL", { month: "long", year: "numeric" });
-}
-
-export function ClientFeed({ profile, clientName, onClose }: { profile: Profile; clientName: string; onClose?: () => void }) {
-  const [posts, setPosts] = useState<Post[]>([]);
+export function ClientFeed({
+  profile,
+  clientName,
+  onClose,
+}: {
+  profile: Profile;
+  clientName: string;
+  onClose?: () => void;
+}) {
+  const [current, setCurrent] = useState(() => new Date());
+  const [posts, setPosts]     = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Post | null>(null);
+
+  const days = useMemo(() => monthGridDays(current), [current]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const today = new Date();
-      const from = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-        .toISOString().slice(0, 10);
-      const to = new Date(today.getFullYear(), today.getMonth() + 3, 0)
-        .toISOString().slice(0, 10);
+      const from = toISODate(days[0]);
+      const to   = toISODate(days[days.length - 1]);
       const data = await fetchPosts({ from, to, clientId: profile.client_id });
       setPosts(data);
     } finally {
       setLoading(false);
     }
-  }, [profile.client_id]);
+  }, [days, profile.client_id]);
 
   useEffect(() => { load(); }, [load]);
 
-  const groups = groupByMonth(posts);
+  const postsByDate = useMemo(() => {
+    const map = new Map<string, Post[]>();
+    for (const p of posts) {
+      const arr = map.get(p.scheduled_date) ?? [];
+      arr.push(p);
+      map.set(p.scheduled_date, arr);
+    }
+    return map;
+  }, [posts]);
+
   const pending = posts.filter(p => p.status === "pending").length;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f3ff]">
-      {/* Header */}
+    <div
+      className="flex h-screen flex-col overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #0f0630 0%, #2d1270 30%, #4c1d95 60%, #6d28d9 100%)",
+      }}
+    >
+      {/* ── Header ── */}
       <header
-        className="relative overflow-hidden px-5 py-4"
-        style={{ background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 60%, #a78bfa 100%)" }}
+        className="flex shrink-0 items-center justify-between gap-3 px-5 py-3"
+        style={{
+          background: "rgba(0,0,0,0.28)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "0.5px solid rgba(255,255,255,0.12)",
+        }}
       >
-        <span className="pointer-events-none absolute left-10 top-1 h-8 w-8 rounded-full bg-white/10" />
-        <span className="pointer-events-none absolute right-20 bottom-0 h-6 w-6 rounded-full bg-white/10" />
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="text-lg font-extrabold tracking-tight text-white drop-shadow">KNBL</span>
-            <span className="h-2 w-2 rounded-full bg-white/70" />
-            <span className="text-sm font-medium text-white/70">{clientName}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {pending > 0 && (
-              <span className="rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-white shadow">
-                {pending} ממתינים לאישור
-              </span>
-            )}
-            {onClose ? (
-              <button
-                onClick={onClose}
-                className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20"
-              >
-                ← חזרה למנהל
-              </button>
-            ) : (
-              <form action={logout}>
-                <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
-                  יציאה
-                </button>
-              </form>
-            )}
-          </div>
+        {/* Brand + client name */}
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg font-extrabold tracking-tight text-white drop-shadow">KNBL</span>
+          <span className="h-2 w-2 rounded-full bg-white/60" />
+          <span className="text-sm font-medium text-white/70">{clientName}</span>
+          {pending > 0 && (
+            <span className="rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-white shadow">
+              {pending} ממתינים לאישור
+            </span>
+          )}
         </div>
+
+        {/* Month navigation */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setCurrent(d => addMonths(d, -1))}
+            className="rounded-full px-2.5 py-1.5 text-white/60 transition hover:bg-white/10 hover:text-white"
+          >
+            ›
+          </button>
+          <button
+            onClick={() => setCurrent(new Date())}
+            className="min-w-[110px] rounded-full border px-3 py-1.5 text-center text-sm font-semibold text-white/90 transition hover:bg-white/10"
+            style={{ borderColor: "rgba(255,255,255,0.2)" }}
+          >
+            {formatHebDate(current, "MMMM yyyy")}
+          </button>
+          <button
+            onClick={() => setCurrent(d => addMonths(d, 1))}
+            className="rounded-full px-2.5 py-1.5 text-white/60 transition hover:bg-white/10 hover:text-white"
+          >
+            ‹
+          </button>
+        </div>
+
+        {/* Logout / back */}
+        {onClose ? (
+          <button
+            onClick={onClose}
+            className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20"
+          >
+            ← חזרה למנהל
+          </button>
+        ) : (
+          <form action={logout}>
+            <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
+              יציאה
+            </button>
+          </form>
+        )}
       </header>
 
-      {/* Feed */}
-      <main className="mx-auto w-full max-w-2xl px-4 py-6">
-        {loading && (
-          <div className="flex justify-center py-16 text-sm text-[#7c3aed]">טוען פוסטים…</div>
-        )}
-
-        {!loading && posts.length === 0 && (
-          <div className="rounded-2xl border border-[#ddd6fe] bg-white p-10 text-center shadow-sm">
-            <p className="text-2xl">📭</p>
-            <p className="mt-2 text-sm text-gray-500">אין פוסטים עדיין</p>
-          </div>
-        )}
-
-        {groups.map(([ym, monthPosts]) => (
-          <section key={ym} className="mb-8">
-            <div className="mb-4 flex items-center gap-3">
-              <span className="text-sm font-bold text-[#4c1d95]">{monthLabel(ym)}</span>
-              <span className="flex-1 border-t border-[#ddd6fe]" />
-              <span className="text-xs text-gray-400">{monthPosts.length} פוסטים</span>
+      {/* ── Calendar ── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Weekday headers */}
+        <div
+          className="grid shrink-0 grid-cols-7 border-b"
+          style={{ borderColor: "rgba(255,255,255,0.1)" }}
+        >
+          {HEB_WEEKDAY_SHORT.map(d => (
+            <div
+              key={d}
+              className="py-2 text-center text-xs font-bold tracking-wide"
+              style={{ color: "#a78bfa" }}
+            >
+              {d}
             </div>
-            <div className="flex flex-col gap-5">
-              {monthPosts.map(post => (
-                <PostCard key={post.id} post={post} profile={profile} onChanged={load} />
-              ))}
-            </div>
-          </section>
-        ))}
-      </main>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="grid flex-1 grid-cols-7 overflow-hidden" style={{ gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, 1fr)` }}>
+          {days.map(day => {
+            const key      = toISODate(day);
+            const dayPosts = postsByDate.get(key) ?? [];
+            const inMonth  = isSameMonth(day, current);
+            const today    = isToday(day);
+
+            return (
+              <div
+                key={key}
+                className="flex flex-col gap-0.5 overflow-y-auto border-b border-s p-1"
+                style={{
+                  borderColor: "rgba(167,139,250,0.18)",
+                  background: today
+                    ? "rgba(124,58,237,0.22)"
+                    : inMonth
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(0,0,0,0.12)",
+                  boxShadow: today ? "inset 0 0 0 1.5px rgba(167,139,250,0.4)" : undefined,
+                }}
+              >
+                {/* Day number */}
+                <span
+                  className="mb-0.5 flex h-5 w-5 items-center justify-center self-end rounded-full text-[10px] font-bold"
+                  style={{
+                    background: today ? "rgba(167,139,250,0.45)" : undefined,
+                    color: today ? "#fff" : inMonth ? "rgba(255,255,255,0.75)" : "rgba(167,139,250,0.3)",
+                    boxShadow: today ? "0 0 8px rgba(124,58,237,0.7)" : undefined,
+                  }}
+                >
+                  {day.getDate()}
+                </span>
+
+                {/* Post pills */}
+                {dayPosts.map(p => {
+                  const dot  = STATUS_DOT[p.status] ?? STATUS_DOT.draft;
+                  const icon = p.platform ? (PLATFORM_ICON[p.platform.toLowerCase()] ?? "") : "";
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelected(p)}
+                      title={p.title}
+                      className="w-full truncate rounded px-1 py-0.5 text-right text-[9px] font-medium text-white/90 transition hover:brightness-125 active:scale-95"
+                      style={{
+                        background: `${dot}22`,
+                        borderLeft: `2.5px solid ${dot}`,
+                      }}
+                    >
+                      {icon && <span className="mr-0.5 opacity-70" style={{ fontSize: 7 }}>{icon}</span>}
+                      {p.title}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {loading && (
+        <div className="pointer-events-none fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black/50 px-4 py-1.5 text-xs text-white backdrop-blur">
+          טוען…
+        </div>
+      )}
+
+      {selected && (
+        <PostModal
+          post={selected}
+          profile={profile}
+          clientName={clientName}
+          onClose={() => setSelected(null)}
+          onChanged={() => { setSelected(null); load(); }}
+        />
+      )}
     </div>
   );
 }
 
-function PostCard({ post, profile, onChanged }: { post: Post; profile: Profile; onChanged: () => void }) {
-  const [expanded, setExpanded] = useState(false);
-  const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
+/* ─────────────────────────── Post modal ─────────────────────────────────── */
+
+function PostModal({
+  post,
+  profile,
+  clientName,
+  onClose,
+  onChanged,
+}: {
+  post: Post;
+  profile: Profile;
+  clientName: string;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [comments, setComments]     = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [busy, setBusy] = useState(false);
-  const isVideo = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
-  const platformIcon = post.platform
-    ? PLATFORM_ICON[post.platform.toLowerCase()] ?? "📱"
-    : null;
-  const statusCfg = STATUS[post.status] ?? STATUS.draft;
-  const isPending = post.status === "pending";
+  const [busy, setBusy]             = useState(false);
+
+  useEffect(() => {
+    fetchComments(post.id).then(setComments).catch(() => {});
+  }, [post.id]);
+
+  const isPending   = post.status === "pending";
+  const dot         = STATUS_DOT[post.status] ?? STATUS_DOT.draft;
+  const statusLabel = STATUS_LABEL[post.status] ?? post.status;
+  const platformIcon = post.platform ? (PLATFORM_ICON[post.platform.toLowerCase()] ?? "📱") : null;
 
   async function approve() {
     setBusy(true);
     try {
-      await updatePost(post.id, { status: "approved" });
+      const res = await fetch("/api/post/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id, clientName }),
+      });
+      if (res.ok) onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function reject() {
+    if (!newComment.trim()) {
+      // focus comment box
+      document.getElementById("client-comment-input")?.focus();
+      return;
+    }
+    setBusy(true);
+    try {
+      // Send "not approved" comment + notification
+      await fetch("/api/client-comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId:   post.id,
+          authorId: profile.id,
+          body:     `❌ ${clientName} לא אישר: ${newComment.trim()}`,
+        }),
+      });
+      setNewComment("");
       onChanged();
     } finally {
       setBusy(false);
     }
   }
 
-  async function loadComments() {
-    if (comments.length > 0) return;
-    const c = await fetchComments(post.id).catch(() => []);
-    setComments(c);
-  }
-
   async function sendComment() {
-    if (!newComment.trim()) return;
+    const body = newComment.trim();
+    if (!body) return;
     setBusy(true);
     try {
-      const c = await addComment(post.id, profile.id, newComment.trim());
-      setComments(prev => [...prev, c]);
-      setNewComment("");
+      const res = await fetch("/api/client-comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId:   post.id,
+          authorId: profile.id,
+          body:     `💬 ${clientName}: ${body}`,
+        }),
+      });
+      if (res.ok) {
+        const { comment } = await res.json().catch(() => ({}));
+        if (comment) setComments(prev => [...prev, comment as Comment]);
+        setNewComment("");
+      }
     } finally {
       setBusy(false);
     }
   }
 
-  function toggleComments() {
-    if (!showComments) loadComments();
-    setShowComments(v => !v);
-  }
+  const hebDate = (d: string) =>
+    new Date(d).toLocaleDateString("he-IL", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[#ddd6fe] bg-white shadow-sm transition hover:shadow-md">
-      {/* Media */}
-      {post.media_url && (
-        <div className="relative bg-gray-100">
-          {isVideo ? (
-            <video src={post.media_url} controls className="max-h-72 w-full object-cover" />
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.media_url} alt="" className="max-h-72 w-full object-cover" />
-          )}
-        </div>
-      )}
-
-      <div className="p-4">
-        {/* Meta row */}
-        <div className="mb-3 flex items-center justify-between">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3">
           <div className="flex items-center gap-2">
-            {platformIcon && (
-              <span className="flex items-center gap-1 rounded-full bg-[#ede9fe] px-2.5 py-1 text-xs font-semibold text-[#4c1d95]">
-                {platformIcon} {post.platform}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusCfg.cls}`}>
-              {statusCfg.label}
+            {platformIcon && <span className="text-lg">{platformIcon}</span>}
+            <span
+              className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+              style={{ background: `${dot}22`, color: dot }}
+            >
+              {statusLabel}
             </span>
             <span className="text-xs text-gray-400">
               {hebDate(post.scheduled_date)}
@@ -219,84 +360,87 @@ function PostCard({ post, profile, onChanged }: { post: Post; profile: Profile; 
               )}
             </span>
           </div>
+          <button
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 text-xl transition hover:bg-gray-100 hover:text-gray-700"
+          >
+            ×
+          </button>
         </div>
 
-        {/* Title */}
-        <h2 className="mb-2 text-base font-bold text-[#1e1b4b]">{post.title}</h2>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto p-5">
+          <h2 className="mb-3 text-lg font-bold leading-snug text-gray-900">{post.title}</h2>
 
-        {/* Body */}
-        {post.body && (
-          <div className="mb-3">
-            <p className={`text-sm leading-relaxed text-gray-600 ${!expanded ? "line-clamp-3" : ""}`}>
+          {post.body && (
+            <p className="mb-5 whitespace-pre-wrap rounded-xl bg-[#f5f3ff] p-4 text-sm leading-relaxed text-gray-700">
               {post.body}
             </p>
-            {post.body.length > 150 && (
-              <button
-                onClick={() => setExpanded(v => !v)}
-                className="mt-1 text-xs font-medium text-[#7c3aed] hover:underline"
-              >
-                {expanded ? "הצג פחות" : "קרא עוד"}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-between border-t border-[#f3f0ff] pt-3">
-          <button
-            onClick={toggleComments}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-500 transition hover:bg-[#f5f3ff] hover:text-[#7c3aed]"
-          >
-            💬
-            {post.comment_count ? `${post.comment_count} תגובות` : "הוסף תגובה"}
-          </button>
-
-          {isPending && (
-            <button
-              onClick={approve}
-              disabled={busy}
-              className="rounded-full px-4 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
-            >
-              {busy ? "מאשר…" : "✓ אישור פוסט"}
-            </button>
           )}
-        </div>
 
-        {/* Comments */}
-        {showComments && (
-          <div className="mt-3 space-y-2 border-t border-[#f3f0ff] pt-3">
+          {/* Approve / Not-approve actions */}
+          {isPending && (
+            <div className="mb-5 flex gap-2">
+              <button
+                onClick={approve}
+                disabled={busy}
+                className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90 disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
+              >
+                {busy ? "…" : "✓ מאושר"}
+              </button>
+              <button
+                onClick={reject}
+                disabled={busy}
+                className="flex-1 rounded-xl border py-2.5 text-sm font-bold transition hover:bg-red-50 disabled:opacity-50"
+                style={{ borderColor: "#ef4444", color: "#ef4444" }}
+                title="יש לכתוב הערה לפני אי-אישור"
+              >
+                {busy ? "…" : "✗ לא מאושר"}
+              </button>
+            </div>
+          )}
+
+          {/* Comments */}
+          <div className="border-t border-[#f3f0ff] pt-4">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-gray-400">הערות</p>
+
             {comments.length === 0 && (
-              <p className="text-xs text-gray-400">אין תגובות עדיין</p>
+              <p className="mb-3 text-xs text-gray-400">אין הערות עדיין</p>
             )}
-            {comments.map(c => (
-              <div key={c.id} className="rounded-xl bg-[#f5f3ff] px-3 py-2 text-sm text-gray-700">
-                {c.body}
-                <span className="mt-0.5 block text-[10px] text-gray-400" dir="ltr">
-                  {new Date(c.created_at).toLocaleString("he-IL")}
-                </span>
-              </div>
-            ))}
-            <div className="flex gap-2 pt-1">
+            <div className="mb-3 flex flex-col gap-2">
+              {comments.map(c => (
+                <div key={c.id} className="rounded-xl bg-[#f5f3ff] px-3 py-2">
+                  <p className="text-sm text-gray-700">{c.body}</p>
+                  <p className="mt-0.5 text-[10px] text-gray-400" dir="ltr">
+                    {new Date(c.created_at).toLocaleString("he-IL")}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
               <input
-                className="flex-1 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-3 py-1.5 text-sm outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed]/20"
-                placeholder="כתוב תגובה…"
+                id="client-comment-input"
+                className="flex-1 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed]/20"
+                placeholder={isPending ? "הערה (חובה ללא אישור)" : "הוסף הערה…"}
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendComment()}
+                onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendComment()}
+                disabled={busy}
               />
               <button
                 onClick={sendComment}
                 disabled={busy || !newComment.trim()}
-                className="rounded-full px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #4c1d95, #7c3aed)" }}
+                className="rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg,#4c1d95,#7c3aed)" }}
               >
                 שלח
               </button>
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </article>
+    </div>
   );
 }

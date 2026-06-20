@@ -67,7 +67,6 @@ export function Planner({
   const [ganttOpen,     setGanttOpen]     = useState(false);
   const [ganttChatOpen, setGanttChatOpen] = useState(false);
   const [trendOpen,     setTrendOpen]     = useState(false);
-  const [previewAsClient, setPreviewAsClient] = useState(false);
   const [clientFeedOpen, setClientFeedOpen] = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
@@ -166,13 +165,10 @@ export function Planner({
         ? `${formatHebDate(new Date(range.from), "d MMM")} – ${formatHebDate(new Date(range.to), "d MMM yyyy")}`
         : formatHebDate(current, "MMMM yyyy");
 
-  // When preview mode is on, act as a client (read-only)
-  const effectiveCanEdit = isAdmin && !previewAsClient;
+  const effectiveCanEdit = isAdmin;
 
-  // Reset preview mode when switching to "all clients"
   const handleClientFilter = (id: string | null) => {
     setClientFilter(id);
-    if (!id) setPreviewAsClient(false);
   };
 
   const activeClient = clientFilter ? clientsList.find(c => c.id === clientFilter) : null;
@@ -182,7 +178,7 @@ export function Planner({
     postsByDate,
     clientsById,
     canEdit: effectiveCanEdit,
-    onSelectPost: previewAsClient ? undefined : openPost,
+    onSelectPost: openPost,
     onCreateForDate: effectiveCanEdit ? openCreate : () => {},
     onMovePost: effectiveCanEdit ? handleMovePost : undefined,
   };
@@ -283,20 +279,7 @@ export function Planner({
         </div>
       </header>
 
-      {/* Preview mode banner */}
-      {previewAsClient && activeClient && (
-        <div className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-4 py-1.5">
-          <span className="text-xs font-medium text-amber-700">
-            👁 מצב תצוגת לקוח — {activeClient.name} · אתה רואה את הלוח כפי שהלקוח רואה אותו
-          </span>
-          <button
-            onClick={() => setPreviewAsClient(false)}
-            className="text-xs font-semibold text-amber-700 hover:text-amber-900"
-          >
-            × יציאה
-          </button>
-        </div>
-      )}
+
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
@@ -308,7 +291,7 @@ export function Planner({
             borderRight: "0.5px solid rgba(255,255,255,0.1)",
           }}
         >
-          {isAdmin && !previewAsClient && (
+          {isAdmin && (
             <div className="flex flex-col gap-1.5">
               {/* Main chat button */}
               <div
@@ -437,9 +420,9 @@ export function Planner({
             </div>
           </div>
 
-          {/* Client view buttons */}
+          {/* Client view button */}
           {isAdmin && clientFilter && (
-            <div className="mt-auto flex flex-col gap-2">
+            <div className="mt-auto">
               <button
                 onClick={() => setClientFeedOpen(true)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
@@ -450,21 +433,6 @@ export function Planner({
                 }}
               >
                 👁 תצוגת לקוח מדויקת
-              </button>
-              <button
-                onClick={() => setPreviewAsClient(v => !v)}
-                className="w-full rounded-xl px-3 py-2 text-xs font-medium transition"
-                style={previewAsClient ? {
-                  background: "rgba(251,191,36,0.12)",
-                  border: "0.5px solid rgba(251,191,36,0.35)",
-                  color: "rgba(253,230,138,0.9)",
-                } : {
-                  background: "rgba(255,255,255,0.03)",
-                  border: "0.5px solid rgba(167,139,250,0.15)",
-                  color: "rgba(167,139,250,0.4)",
-                }}
-              >
-                {previewAsClient ? "✏️ חזרה למצב עריכה" : "עריכה במצב לקוח"}
               </button>
             </div>
           )}
