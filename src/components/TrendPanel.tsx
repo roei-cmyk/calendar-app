@@ -47,12 +47,21 @@ export function TrendPanel({ onClose }: { onClose: () => void }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  function loadTrends() {
+    setLoading(true); setData(null); setError(null);
     fetch("/api/trends")
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => { setError("שגיאה בטעינת הטרנדים"); setLoading(false); });
-  }, []);
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(d => {
+        if (d.error) throw new Error(d.error);
+        setData(d); setLoading(false);
+      })
+      .catch((e) => { setError(`שגיאה: ${e.message}`); setLoading(false); });
+  }
+
+  useEffect(() => { loadTrends(); }, []);
 
   return (
     <div
@@ -143,9 +152,7 @@ export function TrendPanel({ onClose }: { onClose: () => void }) {
       {!loading && (
         <div className="shrink-0 px-4 py-3" style={{ borderTop: "1px solid rgba(124,58,237,0.15)" }}>
           <button
-            onClick={() => { setLoading(true); setData(null); setError(null);
-              fetch("/api/trends").then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => { setError("שגיאה"); setLoading(false); });
-            }}
+            onClick={loadTrends}
             className="w-full py-2 rounded-xl text-xs font-semibold transition-all"
             style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa", border: "1px solid rgba(124,58,237,0.25)" }}
           >
