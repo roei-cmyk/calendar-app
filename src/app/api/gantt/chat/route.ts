@@ -33,6 +33,7 @@ function getMonthEvents(year: number, mon: number): string {
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: NextRequest) {
+  try {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SECRET_KEY!,
@@ -166,4 +167,9 @@ ${monthLabel} (${daysInMonth} ימים) | ${totalPosts} פוסטים בסך הכ
   }
 
   return NextResponse.json({ reply, posts });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Gantt chat error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
