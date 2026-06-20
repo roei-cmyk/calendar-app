@@ -303,15 +303,10 @@ function PostModal({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const [comments, setComments]     = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [busy, setBusy]             = useState(false);
+  const [done, setDone]             = useState<"approved" | "rejected" | null>(null);
 
-  useEffect(() => {
-    fetchComments(post.id).then(setComments).catch(() => {});
-  }, [post.id]);
-
-  const isPending    = post.status === "pending";
   const dot          = STATUS_DOT[post.status] ?? STATUS_DOT.draft;
   const statusLabel  = STATUS_LABEL[post.status] ?? post.status;
   const platformKey  = post.platform?.toLowerCase() ?? "";
@@ -319,6 +314,12 @@ function PostModal({
   const platformName = PLATFORM_NAME[platformKey] ?? post.platform ?? null;
   const platformColor = PLATFORM_COLOR[platformKey] ?? "#6d28d9";
   const isVideo      = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
+  const alreadyDecided = post.status === "approved" || done !== null;
+
+  const hebDate = (d: string) =>
+    new Date(d).toLocaleDateString("he-IL", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
 
   async function approve() {
     setBusy(true);
@@ -328,10 +329,8 @@ function PostModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId: post.id, clientName }),
       });
-      if (res.ok) onChanged();
-    } finally {
-      setBusy(false);
-    }
+      if (res.ok) { setDone("approved"); setTimeout(onChanged, 900); }
+    } finally { setBusy(false); }
   }
 
   async function reject() {
@@ -350,11 +349,9 @@ function PostModal({
           body:     `❌ ${clientName} לא אישר: ${newComment.trim()}`,
         }),
       });
-      setNewComment("");
-      onChanged();
-    } finally {
-      setBusy(false);
-    }
+      setDone("rejected");
+      setTimeout(onChanged, 900);
+    } finally { setBusy(false); }
   }
 
   async function sendComment() {
@@ -362,7 +359,7 @@ function PostModal({
     if (!body) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/client-comment", {
+      await fetch("/api/client-comment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -371,174 +368,158 @@ function PostModal({
           body:     `💬 ${clientName}: ${body}`,
         }),
       });
-      if (res.ok) {
-        const { comment } = await res.json().catch(() => ({}));
-        if (comment) setComments(prev => [...prev, comment as Comment]);
-        setNewComment("");
-      }
-    } finally {
-      setBusy(false);
-    }
+      setNewComment("");
+    } finally { setBusy(false); }
   }
-
-  const hebDate = (d: string) =>
-    new Date(d).toLocaleDateString("he-IL", {
-      weekday: "long", day: "numeric", month: "long", year: "numeric",
-    });
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative flex max-h-[96vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-2xl"
         onClick={e => e.stopPropagation()}
       >
-        {/* ── Media ── */}
-        {post.media_url && (
-          <div className="relative shrink-0 overflow-hidden" style={{ maxHeight: 280 }}>
-            {isVideo ? (
-              <video
-                src={post.media_url}
-                controls
-                className="max-h-[280px] w-full object-contain bg-black"
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={post.media_url}
-                alt="תמונת הפוסט"
-                className="w-full object-cover"
-                style={{ maxHeight: 280 }}
-                onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
-              />
-            )}
-            {/* Platform badge overlaid on image */}
+        {/* ── Close handle (mobile) / button ── */}
+        <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-1">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Platform badge */}
             {platformName && (
               <div
-                className="absolute bottom-2 end-2 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-lg"
+                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold text-white"
                 style={{ background: platformColor }}
               >
-                {platformIcon && <span>{platformIcon}</span>}
-                {platformName}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Modal header ── */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Platform badge (when no image) */}
-            {!post.media_url && platformName && (
-              <div
-                className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
-                style={{ background: platformColor }}
-              >
-                {platformIcon && <span>{platformIcon}</span>}
+                {platformIcon && <span className="text-base">{platformIcon}</span>}
                 {platformName}
               </div>
             )}
             {/* Status badge */}
             <span
-              className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
-              style={{ background: `${dot}22`, color: dot }}
+              className="rounded-full px-2.5 py-1 text-xs font-semibold"
+              style={{ background: `${dot}20`, color: dot, border: `1px solid ${dot}55` }}
             >
               {statusLabel}
-            </span>
-            {/* Date */}
-            <span className="text-xs text-gray-400">
-              {hebDate(post.scheduled_date)}
-              {post.scheduled_time && (
-                <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>
-              )}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 text-xl transition hover:bg-gray-100 hover:text-gray-700"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 text-xl transition hover:bg-gray-100 hover:text-gray-700"
           >
             ×
           </button>
         </div>
 
-        {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto p-5">
-          <h2 className="mb-3 text-lg font-bold leading-snug text-gray-900">{post.title}</h2>
+        {/* ── Scrollable content ── */}
+        <div className="flex-1 overflow-y-auto">
 
-          {post.body && (
-            <p className="mb-5 whitespace-pre-wrap rounded-xl bg-[#f5f3ff] p-4 text-sm leading-relaxed text-gray-700">
-              {post.body}
-            </p>
+          {/* Full image */}
+          {post.media_url && (
+            <div className="px-5 pb-4">
+              {isVideo ? (
+                <video
+                  src={post.media_url}
+                  controls
+                  className="w-full rounded-2xl bg-black"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.media_url}
+                  alt="תמונת הפוסט"
+                  className="w-full rounded-2xl object-cover"
+                  onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+                />
+              )}
+            </div>
           )}
 
-          {/* ── Approve / Reject actions ── */}
-          {isPending && (
-            <div className="mb-5">
-              <p className="mb-2 text-xs font-semibold text-gray-500 text-right">
-                האם אתה מאשר את הפוסט הזה?
+          <div className="px-5 pb-6">
+            {/* Date */}
+            <p className="mb-2 text-xs text-gray-400">
+              {hebDate(post.scheduled_date)}
+              {post.scheduled_time && (
+                <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>
+              )}
+            </p>
+
+            {/* Title */}
+            <h2 className="mb-3 text-xl font-bold leading-snug text-gray-900">{post.title}</h2>
+
+            {/* Post body */}
+            {post.body && (
+              <p className="mb-6 whitespace-pre-wrap text-base leading-relaxed text-gray-700">
+                {post.body}
+              </p>
+            )}
+
+            {/* ── Approve / Reject ── */}
+            <div className="mb-5 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              {done === "approved" || post.status === "approved" ? (
+                <div className="flex items-center justify-center gap-2 py-2 text-emerald-600">
+                  <span className="text-2xl">✓</span>
+                  <span className="text-base font-bold">הפוסט אושר!</span>
+                </div>
+              ) : done === "rejected" ? (
+                <div className="flex items-center justify-center gap-2 py-2 text-red-500">
+                  <span className="text-2xl">✗</span>
+                  <span className="text-base font-bold">ההערה נשלחה למנהל</span>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-3 text-center text-sm font-semibold text-gray-600">
+                    האם אתה מאשר את הפוסט?
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={approve}
+                      disabled={busy || alreadyDecided}
+                      className="flex-1 rounded-xl py-3 text-base font-bold text-white shadow-md transition hover:opacity-90 active:scale-95 disabled:opacity-50"
+                      style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
+                    >
+                      {busy ? "…" : "✓ מאשר"}
+                    </button>
+                    <button
+                      onClick={reject}
+                      disabled={busy || alreadyDecided}
+                      className="flex-1 rounded-xl border-2 py-3 text-base font-bold transition hover:bg-red-50 active:scale-95 disabled:opacity-50"
+                      style={{ borderColor: "#ef4444", color: "#ef4444" }}
+                    >
+                      {busy ? "…" : "✗ לא מאשר"}
+                    </button>
+                  </div>
+                  {!alreadyDecided && (
+                    <p className="mt-2 text-center text-[11px] text-gray-400">
+                      לאי-אישור יש לכתוב הערה למטה לפני הלחיצה
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* ── Comment field ── */}
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">
+                הערה למנהל
               </p>
               <div className="flex gap-2">
-                <button
-                  onClick={approve}
+                <textarea
+                  id="client-comment-input"
+                  rows={3}
+                  className="flex-1 resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
+                  placeholder="כתוב הערה, בקשה לשינוי, או סיבה לאי-אישור…"
+                  value={newComment}
+                  onChange={e => setNewComment(e.target.value)}
                   disabled={busy}
-                  className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90 disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
-                >
-                  {busy ? "…" : "✓ מאשר"}
-                </button>
-                <button
-                  onClick={reject}
-                  disabled={busy}
-                  className="flex-1 rounded-xl border py-2.5 text-sm font-bold transition hover:bg-red-50 disabled:opacity-50"
-                  style={{ borderColor: "#ef4444", color: "#ef4444" }}
-                  title="יש לכתוב הערה לפני אי-אישור"
-                >
-                  {busy ? "…" : "✗ לא מאשר"}
-                </button>
+                />
               </div>
-              <p className="mt-1.5 text-center text-[11px] text-gray-400">
-                לאי-אישור — יש לכתוב הערה למטה לפני הלחיצה
-              </p>
-            </div>
-          )}
-
-          {/* ── Comments ── */}
-          <div className="border-t border-[#f3f0ff] pt-4">
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-gray-400">הערות</p>
-
-            {comments.length === 0 && (
-              <p className="mb-3 text-xs text-gray-400">אין הערות עדיין</p>
-            )}
-            <div className="mb-3 flex flex-col gap-2">
-              {comments.map(c => (
-                <div key={c.id} className="rounded-xl bg-[#f5f3ff] px-3 py-2">
-                  <p className="text-sm text-gray-700">{c.body}</p>
-                  <p className="mt-0.5 text-[10px] text-gray-400" dir="ltr">
-                    {new Date(c.created_at).toLocaleString("he-IL")}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                id="client-comment-input"
-                className="flex-1 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-3 py-2 text-sm outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed]/20"
-                placeholder={isPending ? "הערה (חובה לאי-אישור)" : "הוסף הערה…"}
-                value={newComment}
-                onChange={e => setNewComment(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendComment()}
-                disabled={busy}
-              />
               <button
                 onClick={sendComment}
                 disabled={busy || !newComment.trim()}
-                className="rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-40"
+                className="mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-white transition disabled:opacity-40"
                 style={{ background: "linear-gradient(135deg,#4c1d95,#7c3aed)" }}
               >
-                שלח
+                שלח הערה
               </button>
             </div>
           </div>
