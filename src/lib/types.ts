@@ -13,10 +13,16 @@ export interface ContentPillar {
 }
 
 export type SocialChannel = "instagram" | "facebook" | "linkedin" | "tiktok" | "twitter";
+export type PostFormat = "reel" | "carousel" | "static" | "story";
 
 export interface ChannelConfig {
   platform: SocialChannel;
   posts_per_week: number;
+}
+
+export interface PostFormatMix {
+  format: PostFormat;
+  percentage: number;
 }
 
 export interface Client {
@@ -25,13 +31,22 @@ export interface Client {
   slug: string;
   color: string;
   created_at: string;
+  // Basic profile
   business_description: string | null;
   target_audience: string | null;
   competitors: string | null;
   tone: string | null;
   design_notes: string | null;
+  // Content strategy
   content_pillars: ContentPillar[] | null;
   social_channels: ChannelConfig[] | null;
+  post_format_mix: PostFormatMix[] | null;
+  brand_hashtags: string | null;
+  // Guardrails & enrichment
+  do_not_post: string | null;
+  seasonal_events: string | null;
+  writing_examples: string | null;
+  // Source URLs
   website_url: string | null;
   instagram_handle: string | null;
   facebook_url: string | null;

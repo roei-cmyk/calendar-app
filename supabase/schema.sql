@@ -24,11 +24,30 @@ exception when duplicate_object then null; end $$;
 
 -- Clients (brands managed by the agency) -------------------------------------
 create table if not exists public.clients (
-  id          uuid primary key default gen_random_uuid(),
-  name        text not null,
-  slug        text not null unique,
-  color       text not null default '#111827',
-  created_at  timestamptz not null default now()
+  id                  uuid primary key default gen_random_uuid(),
+  name                text not null,
+  slug                text not null unique,
+  color               text not null default '#111827',
+  created_at          timestamptz not null default now(),
+  -- Basic profile
+  business_description text,
+  target_audience     text,
+  competitors         text,
+  tone                text,
+  design_notes        text,
+  -- Content strategy
+  content_pillars     jsonb,
+  social_channels     jsonb,
+  post_format_mix     jsonb,
+  brand_hashtags      text,
+  -- Guardrails & enrichment
+  do_not_post         text,
+  seasonal_events     text,
+  writing_examples    text,
+  -- Source URLs
+  website_url         text,
+  instagram_handle    text,
+  facebook_url        text
 );
 
 -- Profiles (1:1 with auth.users) ---------------------------------------------

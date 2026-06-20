@@ -14,6 +14,30 @@ function generateImagesBatch(prompts: (string | undefined)[]): (string | null)[]
   return prompts.map(p => p ? buildImageUrl(p) : null);
 }
 
+const HEBREW_MONTHS: Record<number, string> = {
+  1: "ינואר", 2: "פברואר", 3: "מרץ", 4: "אפריל", 5: "מאי", 6: "יוני",
+  7: "יולי", 8: "אוגוסט", 9: "ספטמבר", 10: "אוקטובר", 11: "נובמבר", 12: "דצמבר",
+};
+
+function getMonthEvents(year: number, mon: number): string {
+  const fixed: Record<number, string[]> = {
+    1:  ["1.1 ראש השנה הלועזי", "ט\"ו בשבט (בד\"כ ינואר-פברואר)"],
+    2:  ["14.2 יום האהבה / ולנטיינס דיי", "פורים (בד\"כ פברואר-מרץ)"],
+    3:  ["8.3 יום האישה הבינלאומי", "פסח (אפריל — הכנות נעשות במרץ)"],
+    4:  ["פסח ומועד חג — סיכום מכירות, הנחות", "יום השואה (סוף אפריל)"],
+    5:  ["יום הזיכרון לחללי מערכות ישראל", "5.5 יום העצמאות", "שבועות (מאי-יוני)"],
+    6:  ["יום הילד הבינלאומי 1.6", "יום האב 3.6 (ראשון ראשון ביוני)", "תחילת קיץ / קמפיינים עונתיים"],
+    7:  ["קיץ / חופשות גדולות", "חגים ישראליים בספטמבר (הכנות)"],
+    8:  ["חופשות גדולות / ילדים בבית", "קניות לקראת ספטמבר — ציוד לבית ספר"],
+    9:  ["ראש השנה — שנה טובה ומתוקה", "יום כיפור — מסרים של חידוש ותקווה", "סוכות — שמחת החג"],
+    10: ["שמחת תורה", "מכירות אחרי החגים", "חנוכה (בד\"כ נובמבר-דצמבר — הכנות באוקטובר)"],
+    11: ["חנוכה (בד\"כ נובמבר-דצמבר)", "Black Friday", "Singles Day 11.11"],
+    12: ["חנוכה", "סוף שנה / ביקורת שנתית", "31.12 ערב השנה החדשה — מבצעי סיום שנה"],
+  };
+  const events = fixed[mon] ?? [];
+  return events.length ? `\nאירועים רלוונטיים ב${HEBREW_MONTHS[mon]} ${year}:\n${events.map(e => `• ${e}`).join("\n")}` : "";
+}
+
 export async function POST(req: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,7 +58,9 @@ export async function POST(req: NextRequest) {
 
     const { data: client } = await supabase
       .from("clients")
-      .select("id, name, business_description, target_audience, competitors, tone, design_notes, content_pillars, social_channels")
+      .select(`id, name, business_description, target_audience, competitors, tone, design_notes,
+               content_pillars, social_channels, post_format_mix, brand_hashtags,
+               do_not_post, seasonal_events, writing_examples`)
       .eq("id", clientId)
       .single();
 
@@ -50,6 +76,29 @@ export async function POST(req: NextRequest) {
     const [year, mon] = month.split("-").map(Number);
     const daysInMonth = new Date(year, mon, 0).getDate();
 
+    // Calculate total posts from channels
+    type ChannelRow = { platform: string; posts_per_week: number };
+    const totalPostsPerWeek = (client.social_channels as ChannelRow[] | null)
+      ?.reduce((s: number, c: ChannelRow) => s + c.posts_per_week, 0) ?? 4;
+    const totalPosts = Math.round(totalPostsPerWeek * 4.3);
+
+    // Build pillar distribution instruction
+    type PillarRow = { name: string; percentage: number };
+    const pillarsText = (client.content_pillars as PillarRow[] | null)?.length
+      ? `\nעמודי תוכן (חלק בדיוק לפי אחוזים):\n${(client.content_pillars as PillarRow[]).map(p => `• ${p.name}: ${p.percentage}% (~${Math.round(totalPosts * p.percentage / 100)} פוסטים)`).join("\n")}`
+      : "";
+
+    // Build channels & format text
+    const channelsText = (client.social_channels as ChannelRow[] | null)?.length
+      ? `\nפלטפורמות ותדירות:\n${(client.social_channels as ChannelRow[]).map(c => `• ${c.platform}: ${c.posts_per_week} פוסטים/שבוע`).join("\n")}`
+      : "";
+
+    type FormatRow = { format: string; percentage: number };
+    const formatLabels: Record<string, string> = { reel: "רילס", carousel: "קרוסלה", static: "תמונה בודדת", story: "סטורי" };
+    const formatText = (client.post_format_mix as FormatRow[] | null)?.length
+      ? `\nסוגי תוכן מועדפים:\n${(client.post_format_mix as FormatRow[]).map(f => `• ${formatLabels[f.format] ?? f.format}: ${f.percentage}%`).join("\n")}`
+      : "";
+
     const profileLines = [
       client.business_description && `תיאור העסק: ${client.business_description}`,
       client.target_audience      && `קהל יעד: ${client.target_audience}`,
@@ -58,38 +107,67 @@ export async function POST(req: NextRequest) {
       client.design_notes         && `הערות עיצוב: ${client.design_notes}`,
     ].filter(Boolean).join("\n");
 
-    const pillarsText = client.content_pillars?.length
-      ? `\nעמודי תוכן:\n${client.content_pillars.map((p: { name: string; percentage: number }) => `- ${p.name}: ${p.percentage}%`).join("\n")}`
-      : "";
-
-    const channelsText = client.social_channels?.length
-      ? `\nערוצים: ${client.social_channels.map((c: { platform: string; posts_per_week: number }) => `${c.platform} ×${c.posts_per_week}/שבוע`).join(", ")}`
-      : "";
+    const hashtagsLine    = client.brand_hashtags   ? `\nהאשטאגים קבועים: ${client.brand_hashtags}` : "";
+    const doNotLine       = client.do_not_post      ? `\n⛔ אסור לכתוב על: ${client.do_not_post}` : "";
+    const seasonalLine    = client.seasonal_events  ? `\nאירועים עונתיים ייחודיים ללקוח: ${client.seasonal_events}` : "";
+    const examplesLine    = client.writing_examples ? `\nדוגמאות לפוסטים מוצלחים של הלקוח (לימוד סגנון):\n${client.writing_examples}` : "";
+    const monthEvents     = getMonthEvents(year, mon);
 
     const designStyle = [client.tone, client.design_notes].filter(Boolean).join(". ");
 
-    // Step 1: Claude generates posts + image prompts
+    const POST_TYPES = [
+      "tip — טיפ מקצועי/חינוכי",
+      "promo — מבצע או הצעה מיוחדת",
+      "story — סיפור אמיתי / מאחורי הקלעים",
+      "testimonial — עדות לקוח / ביקורת חיובית",
+      "engagement — שאלה לקהל / סקר / אתגר",
+      "seasonal — קשור לחג / עונה / אירוע שוטף",
+      "product — הצגת מוצר / שירות ספציפי",
+      "educational — תוכן מידעי / רשימה / 'כך תעשו'",
+    ];
+
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 3000,
+      max_tokens: 6000,
       messages: [{
         role: "user",
-        content: `צור לוח תוכן חודשי לרשתות חברתיות עבור: ${client.name}.
-חודש: ${month} (${daysInMonth} ימים)
-${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channelsText}
-הוראות: ${instructions}
+        content: `אתה מנהל תוכן סושיאל מדיה ישראלי מוביל עם 10 שנות ניסיון. צור לוח תוכן חודשי מקצועי ומגוון.
 
-החזר JSON בלבד — כל פוסט חייב לכלול image_prompt באנגלית המתאר תמונה שיווקית לפוסט:
+===== פרטי לקוח =====
+שם: ${client.name}
+חודש: ${HEBREW_MONTHS[mon]} ${year} (${daysInMonth} ימים)
+${profileLines ? `\n${profileLines}` : ""}${pillarsText}${channelsText}${formatText}${hashtagsLine}${doNotLine}${seasonalLine}${examplesLine}${monthEvents}
+
+===== הוראות המנהל =====
+${instructions}
+
+===== כללי יצירה =====
+1. צור בדיוק ${totalPosts} פוסטים, פזורים לאורך כל ימי החודש (לא רק בימי עבודה).
+2. גוון בסוגי פוסטים — השתמש בכל הסוגים הבאים לפחות פעם אחת:
+${POST_TYPES.map(t => `   • ${t}`).join("\n")}
+3. הקפד על חלוקה לפי עמודי התוכן — כל עמוד מקבל את אחוזו.
+4. כתוב גוף פוסט מלא בעברית (3-5 שורות), עם CTA ברור בסוף. לא סכמות, לא תבניות — טקסט אמיתי ומוכן לפרסום.
+5. כותרת: קצרה, מושכת, עד 8 מילים.
+6. התאם לחגים ואירועים של החודש — לפחות פוסט אחד עונתי.
+7. image_prompt: תאר תמונה שיווקית ספציפית לפוסט, באנגלית, ובהתאמה לסגנון: "${designStyle || "professional social media marketing"}".
+   - tip/educational: "flat design infographic, vector illustration, clean icons, white background, professional"
+   - promo: "vibrant promotional banner, bold colors, product showcase, marketing"
+   - story/behind-scenes: "candid lifestyle photography, natural lighting, authentic"
+   - testimonial: "happy customer, lifestyle photography, warm and inviting"
+   - seasonal: match the holiday/event mood
+   - כלל: NO text, NO logos, NO watermarks, NO children.
+
+===== פורמט תגובה =====
+JSON בלבד, ללא טקסט נוסף:
 {"posts":[{
   "title":"...",
   "body":"...",
-  "platform":"...",
+  "platform":"instagram|facebook|linkedin|tiktok",
+  "post_type":"tip|promo|story|testimonial|engagement|seasonal|product|educational",
   "scheduled_date":"${month}-DD",
   "scheduled_time":"HH:MM",
-  "image_prompt":"[detailed English prompt for Flux AI image generator. Choose the right style: for finance/budget/data use 'flat design infographic, vector illustration, colorful icons, white background'; for food use 'professional food photography, appetizing, warm lighting'; for animals/nature use 'wildlife photography'; for people/families use 'lifestyle photography, no children'; for real estate/city use 'architectural photography golden hour'. Style context: ${designStyle || "professional social media marketing"}. NO text, NO logos, NO watermarks, NO children in image.]"
-}]}
-
-כללים: עברית בלבד לטקסט, scheduled_date בפורמט ${month}-DD, פזר לאורך החודש, JSON בלבד.`,
+  "image_prompt":"..."
+}]}`,
       }],
     });
 
@@ -102,6 +180,7 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
         title: string;
         body?: string;
         platform?: string;
+        post_type?: string;
         scheduled_date: string;
         scheduled_time?: string;
         image_prompt?: string;
@@ -114,10 +193,8 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
       return NextResponse.json({ error: "שגיאה בפענוח JSON מהAI" }, { status: 500 });
     }
 
-    // Step 2: Build image URLs (Pollinations generates on-demand when browser loads them)
     const imageUrls = generateImagesBatch(parsed.posts.map(p => p.image_prompt));
 
-    // Step 3: Delete old drafts for this month
     const from = `${month}-01`;
     const to = `${month}-${String(daysInMonth).padStart(2, "0")}`;
     await supabase
@@ -128,7 +205,6 @@ ${profileLines ? `\nפרופיל:\n${profileLines}` : ""}${pillarsText}${channel
       .gte("scheduled_date", from)
       .lte("scheduled_date", to);
 
-    // Step 4: Insert posts with images
     const rows = parsed.posts.map((p, i) => ({
       client_id: clientId,
       title: p.title,

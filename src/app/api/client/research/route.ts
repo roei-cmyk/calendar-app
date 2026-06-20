@@ -5,16 +5,20 @@ export const maxDuration = 60;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-const PROMPT = (clientName: string, sources: string, searchQuery: string) => `אתה יועץ שיווק דיגיטלי ישראלי. חפש מידע על העסק: "${clientName}"
-${sources ? `מקורות לחפש: ${sources}` : ""}
+const PROMPT = (clientName: string, sources: string, searchQuery: string) => `אתה יועץ שיווק דיגיטלי ישראלי מוביל. חקור את העסק "${clientName}" וספק ניתוח מעמיק לצורך יצירת תוכן שיווקי.
+${sources ? `מקורות: ${sources}` : ""}
 
-לאחר החיפוש, החזר JSON בלבד:
+החזר JSON בלבד עם כל השדות הבאים (בעברית):
 {
-  "business_description": "תיאור העסק (2-3 משפטים, עברית)",
-  "target_audience": "קהל היעד המדויק (עברית)",
-  "competitors": "2-3 מתחרים ישירים בישראל (עברית)",
-  "tone": "הטון השיווקי (עברית)",
-  "design_notes": "סגנון ויזואלי, צבעים, אווירה (עברית)"
+  "business_description": "תיאור העסק — מה הם מוכרים, מה ייחודם, כמה ותיקים הם (2-3 משפטים)",
+  "target_audience": "קהל יעד מדויק — גיל, מגדר, מיקום, תחומי עניין, כוח קנייה",
+  "competitors": "2-3 מתחרים ישירים בישראל עם הסבר קצר מה הבדל",
+  "tone": "הטון השיווקי — פורמלי/לא פורמלי, חמים/מקצועי, שפת הפנייה (אתה/את/תמנה), קצר/ארוך",
+  "design_notes": "סגנון ויזואלי — צבעי המותג, אווירה, סגנון צילום, אלמנטים חזותיים אופייניים",
+  "brand_hashtags": "5-10 האשטאגים רלוונטיים לעסק (עברית ואנגלית, מופרדים ברווח)",
+  "do_not_post": "נושאים רגישים, מתחרים שאין להזכיר, ערכים שאין לסתור — מה לא לפרסם",
+  "seasonal_events": "אירועים עונתיים, ימי מכירות, מבצעים קבועים, ימי שנה/יובל — מה חוזר כל שנה",
+  "writing_examples": "2 דוגמאות לפוסטים מוצלחים בסגנון הלקוח (המצאה בהתאם לטון — לא חובה אמיתיים)"
 }
 
 חפש: ${searchQuery}`;
@@ -38,12 +42,11 @@ export async function POST(req: NextRequest) {
       facebookUrl?.trim() && `פייסבוק: ${facebookUrl.trim()}`,
     ].filter(Boolean).join(", ");
 
-    const searchQuery = `${clientName} ישראל ${sources ? `(${sources})` : ""} - מי הם, מה הם מוכרים, קהל יעד, טון שיווקי, מתחרים`;
+    const searchQuery = `${clientName} ישראל ${sources ? `(${sources})` : ""} — מי הם, מה הם מוכרים, קהל יעד, טון, מתחרים, אירועים עונתיים, האשטאגים`;
     const promptText = PROMPT(clientName, sources, searchQuery);
 
     let raw = "";
 
-    // Try web search first
     try {
       const response = await openai.responses.create({
         model: "gpt-4o-search-preview",
@@ -52,11 +55,10 @@ export async function POST(req: NextRequest) {
       });
       raw = response.output_text ?? "";
     } catch {
-      // Fallback to regular GPT-4o without web search
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [{ role: "user", content: promptText }],
-        max_tokens: 800,
+        max_tokens: 1200,
       });
       raw = response.choices[0]?.message?.content ?? "";
     }
