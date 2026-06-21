@@ -378,46 +378,48 @@ function PostModal({
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[96vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-2xl"
+        className="relative flex max-h-[96vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl shadow-2xl sm:rounded-2xl"
+        style={{ background: "linear-gradient(160deg,#1a0a3d 0%,#2d1270 60%,#3b1fa0 100%)" }}
         onClick={e => e.stopPropagation()}
       >
-        {/* ── Close handle (mobile) / button ── */}
-        <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-1">
+        {/* ── Header: platform + status + close ── */}
+        <div
+          className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3"
+          style={{ borderBottom: "1px solid rgba(167,139,250,0.15)" }}
+        >
           <div className="flex flex-wrap items-center gap-2">
-            {/* Platform badge */}
-            {platformName && (
-              <div
-                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold text-white"
-                style={{ background: platformColor }}
-              >
-                {platformIcon && <span className="text-base">{platformIcon}</span>}
-                {platformName}
-              </div>
-            )}
+            {/* Platform badge — always shown */}
+            <div
+              className="flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold text-white"
+              style={{ background: platformName ? platformColor : "rgba(100,80,160,0.6)" }}
+            >
+              <span className="text-base">{platformIcon ?? "📱"}</span>
+              {platformName ?? "פלטפורמה"}
+            </div>
             {/* Status badge */}
             <span
               className="rounded-full px-2.5 py-1 text-xs font-semibold"
-              style={{ background: `${dot}20`, color: dot, border: `1px solid ${dot}55` }}
+              style={{ background: `${dot}30`, color: dot, border: `1px solid ${dot}66` }}
             >
               {statusLabel}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 text-xl transition hover:bg-gray-100 hover:text-gray-700"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-white/50 text-xl transition hover:bg-white/10 hover:text-white"
           >
             ×
           </button>
         </div>
 
         {/* ── Scrollable content ── */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
+        <div className="flex-1 overflow-y-auto px-5 pb-6 pt-4">
 
           {/* Image / Video */}
           {post.media_url && (
             <div
-              className="mb-4 overflow-hidden rounded-2xl"
-              style={{ border: "1px solid rgba(167,139,250,0.2)" }}
+              className="mb-5 overflow-hidden rounded-2xl"
+              style={{ border: "1px solid rgba(167,139,250,0.25)" }}
             >
               {isVideo ? (
                 <video src={post.media_url} controls className="w-full bg-black" />
@@ -427,7 +429,7 @@ function PostModal({
                   src={post.media_url}
                   alt="תמונת הפוסט"
                   className="w-full object-contain"
-                  style={{ background: "rgba(0,0,0,0.3)" }}
+                  style={{ background: "rgba(0,0,0,0.4)" }}
                   onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
                 />
               )}
@@ -435,13 +437,13 @@ function PostModal({
           )}
 
           {/* Date */}
-          <p className="mb-1 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>
+          <p className="mb-2 text-xs font-medium" style={{ color: "rgba(196,181,253,0.7)" }}>
             {hebDate(post.scheduled_date)}
             {post.scheduled_time && <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>}
           </p>
 
           {/* Title */}
-          <h2 className="mb-3 text-xl font-bold leading-snug" style={{ color: "#f3e8ff" }}>
+          <h2 className="mb-4 text-2xl font-extrabold leading-snug" style={{ color: "#ffffff" }}>
             {post.title}
           </h2>
 
