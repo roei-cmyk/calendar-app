@@ -145,15 +145,10 @@ export function Planner({
     const existing = postsRef.current.find(p => p.id === postId);
     if (existing) { openPost(existing); return; }
     try {
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("id", postId)
-        .single();
-      if (error) { console.error("openPostById fetch error:", error.message); return; }
-      if (data) openPost(data as Post);
+      const res = await fetch(`/api/post/get?id=${encodeURIComponent(postId)}`);
+      if (!res.ok) { console.error("openPostById: status", res.status); return; }
+      const { post } = await res.json();
+      if (post) openPost(post as Post);
     } catch (e) { console.error("openPostById error:", e); }
   }, [openPost]);
 
