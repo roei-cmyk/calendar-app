@@ -319,13 +319,13 @@ function PostModal({
     }
     setBusy(true);
     try {
-      await fetch("/api/client-comment", {
+      await fetch("/api/post/unapprove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          postId:   post.id,
-          authorId: profile.id,
-          body:     `❌ ${clientName} לא אישר: ${newComment.trim()}`,
+          postId:    post.id,
+          clientName,
+          comment:   newComment.trim(),
         }),
       });
       setFlash("rejected");
