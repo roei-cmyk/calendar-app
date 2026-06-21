@@ -215,39 +215,13 @@ export function ClientFeed({
                       key={p.id}
                       onClick={() => setSelected(p)}
                       title={p.title}
-                      className="group w-full overflow-hidden rounded-lg text-right transition hover:brightness-110 active:scale-95"
+                      className="w-full rounded-lg px-1.5 py-1 text-right transition hover:brightness-110 active:scale-95"
                       style={{
-                        background: `${dot}18`,
-                        border: `1px solid ${dot}44`,
-                        boxShadow: `0 1px 4px rgba(0,0,0,0.25)`,
+                        background: `${dot}22`,
+                        borderLeft: `3px solid ${dot}`,
                       }}
                     >
-                      {/* Thumbnail strip */}
-                      {p.media_url && !isVideo && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={p.media_url}
-                          alt=""
-                          className="h-12 w-full object-cover"
-                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                        />
-                      )}
-                      {p.media_url && isVideo && (
-                        <div
-                          className="flex h-8 items-center justify-center gap-1 text-[10px]"
-                          style={{ background: "rgba(0,0,0,0.35)", color: "rgba(255,255,255,0.5)" }}
-                        >
-                          ▶ סרטון
-                        </div>
-                      )}
-
-                      {/* Text row */}
-                      <div className="flex items-center gap-1 px-1.5 py-1">
-                        {/* Status dot */}
-                        <span
-                          className="h-1.5 w-1.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: dot }}
-                        />
+                      <div className="flex items-center gap-1">
                         {/* Platform icon */}
                         {icon && (
                           <span className="shrink-0 text-[10px] leading-none">{icon}</span>
@@ -255,10 +229,16 @@ export function ClientFeed({
                         {/* Title */}
                         <span
                           className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-tight"
-                          style={{ color: "rgba(255,255,255,0.88)" }}
+                          style={{ color: "rgba(255,255,255,0.9)" }}
                         >
                           {p.title}
                         </span>
+                        {/* Image indicator */}
+                        {p.media_url && (
+                          <span className="shrink-0 text-[9px] opacity-50">
+                            {isVideo ? "▶" : "🖼"}
+                          </span>
+                        )}
                       </div>
                     </button>
                   );
