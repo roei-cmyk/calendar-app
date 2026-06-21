@@ -305,7 +305,7 @@ function PostModal({
 }) {
   const [newComment, setNewComment] = useState("");
   const [busy, setBusy]             = useState(false);
-  const [done, setDone]             = useState<"approved" | "rejected" | null>(null);
+  const [flash, setFlash]           = useState<"approved" | "rejected" | null>(null);
 
   const dot          = STATUS_DOT[post.status] ?? STATUS_DOT.draft;
   const statusLabel  = STATUS_LABEL[post.status] ?? post.status;
@@ -314,7 +314,6 @@ function PostModal({
   const platformName = PLATFORM_NAME[platformKey] ?? post.platform ?? null;
   const platformColor = PLATFORM_COLOR[platformKey] ?? "#6d28d9";
   const isVideo      = post.media_url && /\.(mp4|mov|avi|webm|mkv)$/i.test(post.media_url);
-  const alreadyDecided = post.status === "approved" || done !== null;
 
   const hebDate = (d: string) =>
     new Date(d).toLocaleDateString("he-IL", {
@@ -329,7 +328,7 @@ function PostModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId: post.id, clientName }),
       });
-      if (res.ok) { setDone("approved"); setTimeout(onChanged, 900); }
+      if (res.ok) { setFlash("approved"); setTimeout(() => { setFlash(null); onChanged(); }, 1200); }
     } finally { setBusy(false); }
   }
 
@@ -349,8 +348,8 @@ function PostModal({
           body:     `❌ ${clientName} לא אישר: ${newComment.trim()}`,
         }),
       });
-      setDone("rejected");
-      setTimeout(onChanged, 900);
+      setFlash("rejected");
+      setTimeout(() => { setFlash(null); onChanged(); }, 1200);
     } finally { setBusy(false); }
   }
 
@@ -465,46 +464,44 @@ function PostModal({
             className="mb-5 rounded-2xl p-4"
             style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(167,139,250,0.15)" }}
           >
-            {done === "approved" || post.status === "approved" ? (
-              <div className="flex items-center justify-center gap-2 py-1" style={{ color: "#34d399" }}>
-                <span className="text-2xl">✓</span>
-                <span className="text-base font-bold">הפוסט אושר!</span>
+            {/* Flash confirmation */}
+            {flash === "approved" && (
+              <div className="mb-3 flex items-center justify-center gap-2 rounded-xl py-2" style={{ background: "rgba(16,185,129,0.15)", color: "#34d399" }}>
+                <span className="text-xl">✓</span>
+                <span className="text-sm font-bold">הפוסט אושר!</span>
               </div>
-            ) : done === "rejected" ? (
-              <div className="flex items-center justify-center gap-2 py-1" style={{ color: "#f87171" }}>
-                <span className="text-2xl">✗</span>
-                <span className="text-base font-bold">ההערה נשלחה למנהל</span>
-              </div>
-            ) : (
-              <>
-                <p className="mb-3 text-center text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
-                  האם אתה מאשר את הפוסט?
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={approve}
-                    disabled={busy || alreadyDecided}
-                    className="flex-1 rounded-xl py-3 text-base font-bold text-white transition hover:opacity-90 active:scale-95 disabled:opacity-40"
-                    style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
-                  >
-                    {busy ? "…" : "✓ מאשר"}
-                  </button>
-                  <button
-                    onClick={reject}
-                    disabled={busy || alreadyDecided}
-                    className="flex-1 rounded-xl border-2 py-3 text-base font-bold transition active:scale-95 disabled:opacity-40"
-                    style={{ borderColor: "#f87171", color: "#f87171" }}
-                  >
-                    {busy ? "…" : "✗ לא מאשר"}
-                  </button>
-                </div>
-                {!alreadyDecided && (
-                  <p className="mt-2 text-center text-[11px]" style={{ color: "rgba(167,139,250,0.5)" }}>
-                    לאי-אישור יש לכתוב הערה למטה לפני הלחיצה
-                  </p>
-                )}
-              </>
             )}
+            {flash === "rejected" && (
+              <div className="mb-3 flex items-center justify-center gap-2 rounded-xl py-2" style={{ background: "rgba(248,113,113,0.15)", color: "#f87171" }}>
+                <span className="text-xl">✗</span>
+                <span className="text-sm font-bold">ההערה נשלחה למנהל</span>
+              </div>
+            )}
+
+            <p className="mb-3 text-center text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
+              {post.status === "approved" ? "הפוסט מאושר — ניתן לשנות:" : "האם אתה מאשר את הפוסט?"}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={approve}
+                disabled={busy}
+                className="flex-1 rounded-xl py-3 text-base font-bold text-white transition hover:opacity-90 active:scale-95 disabled:opacity-40"
+                style={{ background: post.status === "approved" ? "linear-gradient(135deg,#059669,#047857)" : "linear-gradient(135deg,#10b981,#059669)" }}
+              >
+                {busy ? "…" : "✓ מאשר"}
+              </button>
+              <button
+                onClick={reject}
+                disabled={busy}
+                className="flex-1 rounded-xl border-2 py-3 text-base font-bold transition active:scale-95 disabled:opacity-40"
+                style={{ borderColor: "#f87171", color: "#f87171" }}
+              >
+                {busy ? "…" : "✗ לא מאשר"}
+              </button>
+            </div>
+            <p className="mt-2 text-center text-[11px]" style={{ color: "rgba(167,139,250,0.5)" }}>
+              לאי-אישור יש לכתוב הערה למטה לפני הלחיצה
+            </p>
           </div>
 
           {/* ── Comment ── */}
