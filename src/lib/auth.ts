@@ -32,7 +32,7 @@ export async function getSessionContext(): Promise<{
     .select("*")
     .order("name", { ascending: true });
 
-  const PINNED = ["כלכלית לוד", "רולדין", "ספארי רמת גן"];
+  const PINNED = ["כלכלית לוד", "רולדין", "ספארי"];
   const sorted = (clients ?? []).slice().sort((a, b) => {
     const ai = PINNED.findIndex(p => a.name.includes(p) || p.includes(a.name));
     const bi = PINNED.findIndex(p => b.name.includes(p) || p.includes(b.name));
