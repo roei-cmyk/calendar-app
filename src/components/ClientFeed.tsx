@@ -286,9 +286,13 @@ function PostModal({
   const [newComment, setNewComment] = useState("");
   const [busy, setBusy]             = useState(false);
   const [flash, setFlash]           = useState<"approved" | "rejected" | null>(null);
+  const [errMsg, setErrMsg]         = useState<string | null>(null);
+  // Track status locally so the badge updates immediately after approve/reject
+  const [localStatus, setLocalStatus] = useState(post.status);
+  const [needComment, setNeedComment] = useState(false);
 
-  const dot          = STATUS_DOT[post.status] ?? STATUS_DOT.draft;
-  const statusLabel  = STATUS_LABEL[post.status] ?? post.status;
+  const dot          = STATUS_DOT[localStatus] ?? STATUS_DOT.draft;
+  const statusLabel  = STATUS_LABEL[localStatus] ?? localStatus;
   const platformKey  = post.platform?.toLowerCase() ?? "";
   const platformIcon = PLATFORM_ICON[platformKey] ?? null;
   const platformName = PLATFORM_NAME[platformKey] ?? post.platform ?? null;
@@ -302,35 +306,55 @@ function PostModal({
 
   async function approve() {
     setBusy(true);
+    setErrMsg(null);
+    setNeedComment(false);
     try {
       const res = await fetch("/api/post/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId: post.id, clientName }),
       });
-      if (res.ok) { setFlash("approved"); setTimeout(() => { setFlash(null); onChanged(); }, 1200); }
+      if (res.ok) {
+        setLocalStatus("approved");
+        setFlash("approved");
+        setTimeout(() => { setFlash(null); onChanged(); }, 1400);
+      } else {
+        const j = await res.json().catch(() => ({}));
+        setErrMsg(j.error ?? "שגיאה — נסה שוב");
+      }
+    } catch {
+      setErrMsg("שגיאת רשת — נסה שוב");
     } finally { setBusy(false); }
   }
 
   async function reject() {
-    if (!newComment.trim()) {
-      document.getElementById("client-comment-input")?.focus();
-      return;
-    }
+    // Comment is optional — use default if empty
+    const comment = newComment.trim() || "הלקוח לא אישר את הפוסט";
     setBusy(true);
+    setErrMsg(null);
+    setNeedComment(false);
     try {
-      await fetch("/api/post/unapprove", {
+      const res = await fetch("/api/post/unapprove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           postId:    post.id,
           clientName,
-          comment:   newComment.trim(),
+          comment,
           authorId:  profile.id,
         }),
       });
-      setFlash("rejected");
-      setTimeout(() => { setFlash(null); onChanged(); }, 1200);
+      if (res.ok) {
+        setLocalStatus("pending");
+        setFlash("rejected");
+        setNewComment("");
+        setTimeout(() => { setFlash(null); onChanged(); }, 1400);
+      } else {
+        const j = await res.json().catch(() => ({}));
+        setErrMsg(j.error ?? "שגיאה — נסה שוב");
+      }
+    } catch {
+      setErrMsg("שגיאת רשת — נסה שוב");
     } finally { setBusy(false); }
   }
 
@@ -338,6 +362,7 @@ function PostModal({
     const body = newComment.trim();
     if (!body) return;
     setBusy(true);
+    setNeedComment(false);
     try {
       await fetch("/api/client-comment", {
         method: "POST",
@@ -376,9 +401,9 @@ function PostModal({
               <span className="text-base">{platformIcon ?? "📱"}</span>
               {platformName ?? "פלטפורמה"}
             </div>
-            {/* Status badge */}
+            {/* Status badge — updates immediately after approve/reject */}
             <span
-              className="rounded-full px-2.5 py-1 text-xs font-semibold"
+              className="rounded-full px-2.5 py-1 text-xs font-semibold transition-all duration-300"
               style={{ background: `${dot}30`, color: dot, border: `1px solid ${dot}66` }}
             >
               {statusLabel}
@@ -445,6 +470,13 @@ function PostModal({
             className="mb-5 rounded-2xl p-4"
             style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(167,139,250,0.15)" }}
           >
+            {/* Error message */}
+            {errMsg && (
+              <div className="mb-3 flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "rgba(239,68,68,0.15)", color: "#fca5a5" }}>
+                <span>⚠️</span>
+                <span className="text-xs font-semibold">{errMsg}</span>
+              </div>
+            )}
             {/* Flash confirmation */}
             {flash === "approved" && (
               <div className="mb-3 flex items-center justify-center gap-2 rounded-xl py-2" style={{ background: "rgba(16,185,129,0.15)", color: "#34d399" }}>
@@ -455,19 +487,23 @@ function PostModal({
             {flash === "rejected" && (
               <div className="mb-3 flex items-center justify-center gap-2 rounded-xl py-2" style={{ background: "rgba(248,113,113,0.15)", color: "#f87171" }}>
                 <span className="text-xl">✗</span>
-                <span className="text-sm font-bold">ההערה נשלחה למנהל</span>
+                <span className="text-sm font-bold">הפוסט הוחזר לממתין — המנהל קיבל התראה</span>
               </div>
             )}
 
             <p className="mb-3 text-center text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
-              {post.status === "approved" ? "הפוסט מאושר — ניתן לשנות:" : "האם אתה מאשר את הפוסט?"}
+              {localStatus === "approved" ? "הפוסט מאושר — ניתן לשנות:" : "האם אתה מאשר את הפוסט?"}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={approve}
                 disabled={busy}
                 className="flex-1 rounded-xl py-3 text-base font-bold text-white transition hover:opacity-90 active:scale-95 disabled:opacity-40"
-                style={{ background: post.status === "approved" ? "linear-gradient(135deg,#059669,#047857)" : "linear-gradient(135deg,#10b981,#059669)" }}
+                style={{
+                  background: localStatus === "approved"
+                    ? "linear-gradient(135deg,#059669,#047857)"
+                    : "linear-gradient(135deg,#10b981,#059669)",
+                }}
               >
                 {busy ? "…" : "✓ מאשר"}
               </button>
@@ -475,20 +511,30 @@ function PostModal({
                 onClick={reject}
                 disabled={busy}
                 className="flex-1 rounded-xl border-2 py-3 text-base font-bold transition active:scale-95 disabled:opacity-40"
-                style={{ borderColor: "#f87171", color: "#f87171" }}
+                style={{
+                  borderColor: localStatus === "pending" ? "#fbbf24" : "#f87171",
+                  color: localStatus === "pending" ? "#fbbf24" : "#f87171",
+                  background: localStatus === "pending" ? "rgba(251,191,36,0.08)" : undefined,
+                }}
               >
                 {busy ? "…" : "✗ לא מאשר"}
               </button>
             </div>
-            <p className="mt-2 text-center text-[11px]" style={{ color: "rgba(167,139,250,0.5)" }}>
-              לאי-אישור יש לכתוב הערה למטה לפני הלחיצה
+            <p className="mt-2 text-center text-[11px]" style={{ color: "rgba(167,139,250,0.45)" }}>
+              ניתן להוסיף הערה למטה לפני לחיצת &quot;לא מאשר&quot;
             </p>
           </div>
 
           {/* ── Comment ── */}
           <div
             className="rounded-2xl p-4"
-            style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(167,139,250,0.15)" }}
+            style={{
+              background: "rgba(0,0,0,0.2)",
+              border: needComment
+                ? "1px solid rgba(251,191,36,0.6)"
+                : "1px solid rgba(167,139,250,0.15)",
+              transition: "border 0.2s",
+            }}
           >
             <p className="mb-2 text-sm font-semibold" style={{ color: "#c4b5fd" }}>הוספת תגובה</p>
             <textarea
@@ -502,7 +548,7 @@ function PostModal({
               }}
               placeholder="כתוב הערה, בקשה לשינוי, או סיבה לאי-אישור…"
               value={newComment}
-              onChange={e => setNewComment(e.target.value)}
+              onChange={e => { setNewComment(e.target.value); if (e.target.value) setNeedComment(false); }}
               disabled={busy}
             />
             <button
