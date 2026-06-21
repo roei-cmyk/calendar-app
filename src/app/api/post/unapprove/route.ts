@@ -8,10 +8,11 @@ export async function POST(req: NextRequest) {
   );
 
   try {
-    const { postId, clientName, comment } = await req.json() as {
+    const { postId, clientName, comment, authorId } = await req.json() as {
       postId: string;
       clientName: string;
       comment: string;
+      authorId: string;
     };
 
     if (!postId) return NextResponse.json({ error: "חסר postId" }, { status: 400 });
@@ -22,20 +23,28 @@ export async function POST(req: NextRequest) {
       .eq("id", postId)
       .single();
 
-    // Set status back to pending
-    await supabase.from("posts").update({ status: "pending" }).eq("id", postId);
+    // 1. Set status back to pending
+    const { error: updateErr } = await supabase
+      .from("posts")
+      .update({ status: "pending" })
+      .eq("id", postId);
 
-    // Add comment
+    if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+
+    const body = `❌ ${clientName} לא אישר: ${comment}`;
+
+    // 2. Add comment
     await supabase.from("comments").insert({
-      post_id: postId,
-      body: `❌ ${clientName} לא אישר: ${comment}`,
+      post_id:   postId,
+      author_id: authorId,
+      body,
     });
 
-    // Notify admin
+    // 3. Notify admin
     await supabase.from("notifications").insert({
-      post_id: postId,
-      post_title: post?.title ?? "פוסט ללא כותרת",
-      comment_body: `❌ ${clientName} לא אישר: ${comment}`,
+      post_id:      postId,
+      post_title:   post?.title ?? "פוסט ללא כותרת",
+      comment_body: body,
     });
 
     return NextResponse.json({ ok: true });

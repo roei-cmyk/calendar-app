@@ -326,6 +326,7 @@ function PostModal({
           postId:    post.id,
           clientName,
           comment:   newComment.trim(),
+          authorId:  profile.id,
         }),
       });
       setFlash("rejected");
