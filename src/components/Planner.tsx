@@ -147,9 +147,14 @@ export function Planner({
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
-      const { data } = await supabase.from("posts").select("*").eq("id", postId).single();
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+      if (error) { console.error("openPostById fetch error:", error.message); return; }
       if (data) openPost(data as Post);
-    } catch { /* silent */ }
+    } catch (e) { console.error("openPostById error:", e); }
   }, [openPost]);
 
   const openCreate = useCallback((date: string) => {
