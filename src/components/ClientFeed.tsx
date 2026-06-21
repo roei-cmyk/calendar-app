@@ -411,117 +411,128 @@ function PostModal({
         </div>
 
         {/* ── Scrollable content ── */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
 
-          {/* Full image */}
+          {/* Image / Video */}
           {post.media_url && (
-            <div className="px-5 pb-4">
+            <div
+              className="mb-4 overflow-hidden rounded-2xl"
+              style={{ border: "1px solid rgba(167,139,250,0.2)" }}
+            >
               {isVideo ? (
-                <video
-                  src={post.media_url}
-                  controls
-                  className="w-full rounded-2xl bg-black"
-                />
+                <video src={post.media_url} controls className="w-full bg-black" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={post.media_url}
                   alt="תמונת הפוסט"
-                  className="w-full rounded-2xl object-cover"
+                  className="w-full object-contain"
+                  style={{ background: "rgba(0,0,0,0.3)" }}
                   onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
                 />
               )}
             </div>
           )}
 
-          <div className="px-5 pb-6">
-            {/* Date */}
-            <p className="mb-2 text-xs text-gray-400">
-              {hebDate(post.scheduled_date)}
-              {post.scheduled_time && (
-                <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>
-              )}
-            </p>
+          {/* Date */}
+          <p className="mb-1 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>
+            {hebDate(post.scheduled_date)}
+            {post.scheduled_time && <span dir="ltr"> · {post.scheduled_time.slice(0, 5)}</span>}
+          </p>
 
-            {/* Title */}
-            <h2 className="mb-3 text-xl font-bold leading-snug text-gray-900">{post.title}</h2>
+          {/* Title */}
+          <h2 className="mb-3 text-xl font-bold leading-snug" style={{ color: "#f3e8ff" }}>
+            {post.title}
+          </h2>
 
-            {/* Post body */}
-            {post.body && (
-              <p className="mb-6 whitespace-pre-wrap text-base leading-relaxed text-gray-700">
+          {/* Post body */}
+          {post.body && (
+            <div
+              className="mb-5 rounded-2xl p-4"
+              style={{ background: "rgba(124,58,237,0.18)", border: "1px solid rgba(167,139,250,0.18)" }}
+            >
+              <p className="text-sm font-semibold mb-1.5" style={{ color: "#c4b5fd" }}>תוכן</p>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
                 {post.body}
               </p>
-            )}
-
-            {/* ── Approve / Reject ── */}
-            <div className="mb-5 rounded-2xl border border-gray-100 bg-gray-50 p-4">
-              {done === "approved" || post.status === "approved" ? (
-                <div className="flex items-center justify-center gap-2 py-2 text-emerald-600">
-                  <span className="text-2xl">✓</span>
-                  <span className="text-base font-bold">הפוסט אושר!</span>
-                </div>
-              ) : done === "rejected" ? (
-                <div className="flex items-center justify-center gap-2 py-2 text-red-500">
-                  <span className="text-2xl">✗</span>
-                  <span className="text-base font-bold">ההערה נשלחה למנהל</span>
-                </div>
-              ) : (
-                <>
-                  <p className="mb-3 text-center text-sm font-semibold text-gray-600">
-                    האם אתה מאשר את הפוסט?
-                  </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={approve}
-                      disabled={busy || alreadyDecided}
-                      className="flex-1 rounded-xl py-3 text-base font-bold text-white shadow-md transition hover:opacity-90 active:scale-95 disabled:opacity-50"
-                      style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
-                    >
-                      {busy ? "…" : "✓ מאשר"}
-                    </button>
-                    <button
-                      onClick={reject}
-                      disabled={busy || alreadyDecided}
-                      className="flex-1 rounded-xl border-2 py-3 text-base font-bold transition hover:bg-red-50 active:scale-95 disabled:opacity-50"
-                      style={{ borderColor: "#ef4444", color: "#ef4444" }}
-                    >
-                      {busy ? "…" : "✗ לא מאשר"}
-                    </button>
-                  </div>
-                  {!alreadyDecided && (
-                    <p className="mt-2 text-center text-[11px] text-gray-400">
-                      לאי-אישור יש לכתוב הערה למטה לפני הלחיצה
-                    </p>
-                  )}
-                </>
-              )}
             </div>
+          )}
 
-            {/* ── Comment field ── */}
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">
-                הערה למנהל
-              </p>
-              <div className="flex gap-2">
-                <textarea
-                  id="client-comment-input"
-                  rows={3}
-                  className="flex-1 resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
-                  placeholder="כתוב הערה, בקשה לשינוי, או סיבה לאי-אישור…"
-                  value={newComment}
-                  onChange={e => setNewComment(e.target.value)}
-                  disabled={busy}
-                />
+          {/* ── Approve / Reject ── */}
+          <div
+            className="mb-5 rounded-2xl p-4"
+            style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(167,139,250,0.15)" }}
+          >
+            {done === "approved" || post.status === "approved" ? (
+              <div className="flex items-center justify-center gap-2 py-1" style={{ color: "#34d399" }}>
+                <span className="text-2xl">✓</span>
+                <span className="text-base font-bold">הפוסט אושר!</span>
               </div>
-              <button
-                onClick={sendComment}
-                disabled={busy || !newComment.trim()}
-                className="mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-white transition disabled:opacity-40"
-                style={{ background: "linear-gradient(135deg,#4c1d95,#7c3aed)" }}
-              >
-                שלח הערה
-              </button>
-            </div>
+            ) : done === "rejected" ? (
+              <div className="flex items-center justify-center gap-2 py-1" style={{ color: "#f87171" }}>
+                <span className="text-2xl">✗</span>
+                <span className="text-base font-bold">ההערה נשלחה למנהל</span>
+              </div>
+            ) : (
+              <>
+                <p className="mb-3 text-center text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
+                  האם אתה מאשר את הפוסט?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={approve}
+                    disabled={busy || alreadyDecided}
+                    className="flex-1 rounded-xl py-3 text-base font-bold text-white transition hover:opacity-90 active:scale-95 disabled:opacity-40"
+                    style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}
+                  >
+                    {busy ? "…" : "✓ מאשר"}
+                  </button>
+                  <button
+                    onClick={reject}
+                    disabled={busy || alreadyDecided}
+                    className="flex-1 rounded-xl border-2 py-3 text-base font-bold transition active:scale-95 disabled:opacity-40"
+                    style={{ borderColor: "#f87171", color: "#f87171" }}
+                  >
+                    {busy ? "…" : "✗ לא מאשר"}
+                  </button>
+                </div>
+                {!alreadyDecided && (
+                  <p className="mt-2 text-center text-[11px]" style={{ color: "rgba(167,139,250,0.5)" }}>
+                    לאי-אישור יש לכתוב הערה למטה לפני הלחיצה
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ── Comment ── */}
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(167,139,250,0.15)" }}
+          >
+            <p className="mb-2 text-sm font-semibold" style={{ color: "#c4b5fd" }}>הוספת תגובה</p>
+            <textarea
+              id="client-comment-input"
+              rows={3}
+              className="w-full resize-none rounded-xl px-4 py-3 text-sm leading-relaxed outline-none transition"
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(167,139,250,0.25)",
+                color: "rgba(255,255,255,0.9)",
+              }}
+              placeholder="כתוב הערה, בקשה לשינוי, או סיבה לאי-אישור…"
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              disabled={busy}
+            />
+            <button
+              onClick={sendComment}
+              disabled={busy || !newComment.trim()}
+              className="mt-2 w-full rounded-xl py-2.5 text-sm font-bold text-white transition disabled:opacity-40"
+              style={{ background: "linear-gradient(135deg,#7c3aed,#4c1d95)" }}
+            >
+              שליחה
+            </button>
           </div>
         </div>
       </div>
