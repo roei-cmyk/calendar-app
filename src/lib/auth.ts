@@ -32,5 +32,15 @@ export async function getSessionContext(): Promise<{
     .select("*")
     .order("name", { ascending: true });
 
-  return { profile, clients: clients ?? [] };
+  const PINNED = ["כלכלית לוד", "רולדין", "ספארי רמת גן"];
+  const sorted = (clients ?? []).slice().sort((a, b) => {
+    const ai = PINNED.findIndex(p => a.name.includes(p) || p.includes(a.name));
+    const bi = PINNED.findIndex(p => b.name.includes(p) || p.includes(b.name));
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.name.localeCompare(b.name, "he");
+  });
+
+  return { profile, clients: sorted };
 }
