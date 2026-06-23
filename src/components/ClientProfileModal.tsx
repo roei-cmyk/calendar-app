@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { Client, ContentPillar, ChannelConfig, SocialChannel, PostFormatMix, PostFormat } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
-import { AiSpinner } from "@/components/AiSpinner";
 
 const PLATFORMS: { id: SocialChannel; label: string; icon: string }[] = [
   { id: "instagram", label: "אינסטגרם", icon: "ti-brand-instagram" },
@@ -69,15 +68,8 @@ export function ClientProfileModal({
     ]
   );
 
-  const [sources, setSources] = useState({
-    websiteUrl:       client.website_url ?? "",
-    instagramHandle:  client.instagram_handle ?? "",
-    facebookUrl:      client.facebook_url ?? "",
-  });
-  const [scrapedFrom, setScrapedFrom] = useState<string[]>([]);
-  const [saving, setSaving]       = useState(false);
-  const [error, setError]         = useState<string | null>(null);
-  const [researching, setResearching] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState<string | null>(null);
 
   function field(key: keyof typeof form, value: string) {
     setForm(f => ({ ...f, [key]: value }));
@@ -115,43 +107,6 @@ export function ClientProfileModal({
     setFormats(fs => fs.map(f => f.format === format ? { ...f, percentage: val } : f));
   }
 
-  async function handleResearch() {
-    setResearching(true);
-    setError(null);
-    setScrapedFrom([]);
-    try {
-      const res = await fetch("/api/client/research", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientName:      client.name,
-          websiteUrl:      sources.websiteUrl || undefined,
-          instagramHandle: sources.instagramHandle || undefined,
-          facebookUrl:     sources.facebookUrl || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "שגיאה");
-      setForm({
-        business_description: data.business_description ?? "",
-        target_audience:      data.target_audience ?? "",
-        competitors:          data.competitors ?? "",
-        tone:                 data.tone ?? "",
-        design_notes:         data.design_notes ?? "",
-        do_not_post:          data.do_not_post ?? "",
-        seasonal_events:      data.seasonal_events ?? "",
-        writing_examples:     data.writing_examples ?? "",
-        brand_hashtags:       data.brand_hashtags ?? "",
-      });
-      setScrapedFrom(data.scrapedSources ?? []);
-      setTab("profile");
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setResearching(false);
-    }
-  }
-
   async function handleSave() {
     setSaving(true);
     setError(null);
@@ -172,9 +127,6 @@ export function ClientProfileModal({
           content_pillars:      pillars.length > 0 ? pillars : null,
           social_channels:      channels.length > 0 ? channels : null,
           post_format_mix:      formats.length > 0 ? formats : null,
-          website_url:          sources.websiteUrl || null,
-          instagram_handle:     sources.instagramHandle || null,
-          facebook_url:         sources.facebookUrl || null,
         })
         .eq("id", client.id)
         .select()
@@ -258,49 +210,9 @@ export function ClientProfileModal({
             </div>
           )}
 
-          {researching && <AiSpinner label={`Claude חוקר את ${client.name}…`} />}
-
           {/* ===== TAB: פרופיל ===== */}
-          {!researching && tab === "profile" && (
+          {tab === "profile" && (
             <div className="space-y-4">
-              {/* Research sources */}
-              <div className="space-y-2 rounded-xl p-3" style={{ background: "rgba(124,58,237,0.1)", border: "0.5px solid rgba(124,58,237,0.3)" }}>
-                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold" style={{ color: "#c4b5fd" }}>
-                  <i className="ti ti-world" aria-hidden="true" />
-                  מקורות מידע — AI יסרוק ויש מהם
-                </p>
-                {[
-                  { icon: "ti-world-www", key: "websiteUrl" as const, placeholder: "כתובת אתר (https://example.co.il)" },
-                  { icon: "ti-brand-instagram", key: "instagramHandle" as const, placeholder: "@שם_משתמש_אינסטגרם" },
-                  { icon: "ti-brand-facebook", key: "facebookUrl" as const, placeholder: "קישור לדף פייסבוק" },
-                ].map(({ icon, key, placeholder }) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <i className={`ti ${icon}`} style={{ fontSize: 15, color: "rgba(167,139,250,0.5)" }} aria-hidden="true" />
-                    <input
-                      className="input-dark flex-1 text-sm"
-                      placeholder={placeholder}
-                      value={sources[key]}
-                      onChange={e => setSources(s => ({ ...s, [key]: e.target.value }))}
-                      dir="ltr"
-                    />
-                  </div>
-                ))}
-                <button
-                  onClick={handleResearch}
-                  disabled={researching}
-                  className="mt-1 w-full rounded-lg py-2 text-xs font-bold text-white transition disabled:opacity-60"
-                  style={{ background: "linear-gradient(135deg,#7c3aed,#6d28d9)" }}
-                >
-                  <i className="ti ti-sparkles me-1" aria-hidden="true" />
-                  נתח מהאינטרנט עם AI
-                </button>
-                {scrapedFrom.length > 0 && (
-                  <p className="text-center text-[11px]" style={{ color: "#6ee7b7" }}>
-                    ✓ נסרקו: {scrapedFrom.join(", ")}
-                  </p>
-                )}
-              </div>
-
               <DField label="תיאור העסק" hint="מה מוכרים? מה ייחודי?">
                 <textarea className="input-dark min-h-[80px] resize-y"
                   placeholder="לדוגמה: חנות בגדי ילדים מובילה, מתמחה בגילאי 0-12, ידועה במחירים נגישים"
@@ -345,7 +257,7 @@ export function ClientProfileModal({
           )}
 
           {/* ===== TAB: אסטרטגיית תוכן ===== */}
-          {!researching && tab === "content" && (
+          {tab === "content" && (
             <div className="space-y-5">
               {/* Content Pillars */}
               <div>
@@ -451,11 +363,11 @@ export function ClientProfileModal({
           )}
 
           {/* ===== TAB: ערוצים ===== */}
-          {!researching && tab === "channels" && (
+          {tab === "channels" && (
             <div className="space-y-4">
               <div className="rounded-xl p-3 text-xs" style={{ background: "rgba(124,58,237,0.1)", border: "0.5px solid rgba(124,58,237,0.3)", color: "#c4b5fd" }}>
                 <i className="ti ti-info-circle me-1" aria-hidden="true" />
-                בחר פלטפורמות פעילות — הגאנט יחלק פוסטים בהתאם לתדירות שתגדיר
+                בחר פלטפורמות פעילות והגדר את תדירות הפרסום בכל ערוץ
               </div>
               <div className="space-y-2">
                 {PLATFORMS.map(pl => {

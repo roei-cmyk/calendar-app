@@ -15,11 +15,8 @@ import { MonthView } from "@/components/calendar/MonthView";
 import { WeekView } from "@/components/calendar/WeekView";
 import { DayView } from "@/components/calendar/DayView";
 import { PostModal } from "@/components/PostModal";
-import { GanttModal } from "@/components/GanttModal";
-import { GanttChatModal } from "@/components/GanttChatModal";
 import { ClientProfileModal } from "@/components/ClientProfileModal";
 import { NotificationBell } from "@/components/NotificationBell";
-import { TrendPanel } from "@/components/TrendPanel";
 import { ClientFeed } from "@/components/ClientFeed";
 import { logout } from "@/app/login/actions";
 
@@ -64,9 +61,6 @@ export function Planner({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
-  const [ganttOpen,     setGanttOpen]     = useState(false);
-  const [ganttChatOpen, setGanttChatOpen] = useState(false);
-  const [trendOpen,     setTrendOpen]     = useState(false);
   const [clientFeedOpen, setClientFeedOpen] = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
@@ -255,21 +249,6 @@ export function Planner({
               </div>
             </div>
           </div>
-          {/* Trends button */}
-          <button
-            onClick={() => setTrendOpen(v => !v)}
-            title="טרנדים חמים"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95"
-            style={{
-              background: trendOpen
-                ? "linear-gradient(135deg,#7c3aed,#ec4899)"
-                : "rgba(124,58,237,0.25)",
-              border: "1px solid rgba(124,58,237,0.4)",
-            }}
-          >
-            <span style={{ fontSize: 16, lineHeight: 1 }}>✨</span>
-          </button>
-
           <NotificationBell onOpenPost={openPostById} />
           <form action={logout}>
             <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">
@@ -291,42 +270,6 @@ export function Planner({
             borderRight: "0.5px solid rgba(255,255,255,0.1)",
           }}
         >
-          {isAdmin && (
-            <div className="flex flex-col gap-1.5">
-              {/* Main chat button */}
-              <div
-                onClick={() => setGanttChatOpen(true)}
-                className="w-full cursor-pointer active:scale-95 transition-transform"
-                style={{ padding: "2px", borderRadius: "10px", background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f97316 100%)" }}
-              >
-                <button
-                  className="w-full rounded-[8px] py-2 text-sm font-bold text-[#e9d5ff] transition-all"
-                  style={{ background: "#0d0620", boxShadow: "inset 0 0 20px rgba(124,58,237,0.15)", border: "none" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "#180d35")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "#0d0620")}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    תכנון גאנט עם AI
-                  </span>
-                </button>
-              </div>
-
-              {/* Quick generate (old flow) */}
-              <button
-                onClick={() => setGanttOpen(true)}
-                className="w-full py-1.5 text-xs transition-colors"
-                style={{ color: "rgba(167,139,250,0.5)", border: "none", background: "transparent" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(167,139,250,0.8)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(167,139,250,0.5)")}
-              >
-                ⚡ יצירה מהירה / עריכת פרופיל
-              </button>
-            </div>
-          )}
-
           <div>
             <h3
               className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.15em]"
@@ -559,28 +502,6 @@ export function Planner({
           />
         </div>
       )}
-
-      {ganttOpen && (
-        <GanttModal
-          clients={clientsList}
-          defaultClientId={clientFilter}
-          defaultMonth={`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`}
-          onClose={() => setGanttOpen(false)}
-          onDone={load}
-        />
-      )}
-
-      {ganttChatOpen && (
-        <GanttChatModal
-          clients={clientsList}
-          defaultClientId={clientFilter}
-          defaultMonth={`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`}
-          onClose={() => setGanttChatOpen(false)}
-          onDone={load}
-        />
-      )}
-
-      {trendOpen && <TrendPanel onClose={() => setTrendOpen(false)} />}
 
       {modalOpen && (
         <PostModal
