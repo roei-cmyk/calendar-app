@@ -9,7 +9,7 @@ import {
 } from "date-fns";
 import type { CalendarView, Client, Post, PostStatus, Profile } from "@/lib/types";
 import { POST_STATUS_LABELS } from "@/lib/types";
-import { fetchPosts, updatePost } from "@/lib/posts";
+import { fetchPosts, fetchPostsForListView, updatePost } from "@/lib/posts";
 import { formatHebDate, shiftDate, toISODate } from "@/lib/date";
 import { MonthView } from "@/components/calendar/MonthView";
 import { WeekView } from "@/components/calendar/WeekView";
@@ -18,6 +18,7 @@ import { PostModal } from "@/components/PostModal";
 import { ClientProfileModal } from "@/components/ClientProfileModal";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ClientFeed } from "@/components/ClientFeed";
+import { ListView } from "@/components/ListView";
 import { logout } from "@/app/login/actions";
 
 const WEEK_OPTS = { weekStartsOn: 0 as const };
@@ -26,6 +27,7 @@ const VIEW_LABELS: Record<CalendarView, string> = {
   day: "יום",
   week: "שבוע",
   month: "חודש",
+  list: "רשימה",
 };
 
 function rangeFor(view: CalendarView, date: Date): { from: string; to: string } {
@@ -35,6 +37,7 @@ function rangeFor(view: CalendarView, date: Date): { from: string; to: string } 
       from: toISODate(startOfWeek(date, WEEK_OPTS)),
       to: toISODate(endOfWeek(date, WEEK_OPTS)),
     };
+  if (view === "list") return { from: toISODate(date), to: toISODate(date) };
   return {
     from: toISODate(startOfWeek(startOfMonth(date), WEEK_OPTS)),
     to: toISODate(endOfWeek(endOfMonth(date), WEEK_OPTS)),
@@ -80,18 +83,24 @@ export function Planner({
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchPosts({
-        from: range.from,
-        to: range.to,
-        clientId: clientFilter,
-      });
-      setPosts(data);
+      if (view === "list") {
+        if (!clientFilter) { setPosts([]); return; }
+        const data = await fetchPostsForListView(clientFilter);
+        setPosts(data);
+      } else {
+        const data = await fetchPosts({
+          from: range.from,
+          to: range.to,
+          clientId: clientFilter,
+        });
+        setPosts(data);
+      }
     } catch {
       setPosts([]);
     } finally {
       setLoading(false);
     }
-  }, [range.from, range.to, clientFilter]);
+  }, [view, range.from, range.to, clientFilter]);
 
   useEffect(() => {
     load();
@@ -152,20 +161,22 @@ export function Planner({
     setModalOpen(true);
   }, []);
 
+  const activeClient = clientFilter ? (clientsList.find(c => c.id === clientFilter) ?? null) : null;
+
   const rangeLabel =
     view === "day"
       ? formatHebDate(current)
       : view === "week"
         ? `${formatHebDate(new Date(range.from), "d MMM")} – ${formatHebDate(new Date(range.to), "d MMM yyyy")}`
-        : formatHebDate(current, "MMMM yyyy");
+        : view === "list"
+          ? (activeClient ? `רשימת פוסטים · ${activeClient.name}` : "רשימת פוסטים")
+          : formatHebDate(current, "MMMM yyyy");
 
   const effectiveCanEdit = isAdmin;
 
   const handleClientFilter = (id: string | null) => {
     setClientFilter(id);
   };
-
-  const activeClient = clientFilter ? clientsList.find(c => c.id === clientFilter) : null;
 
   const viewProps = {
     current,
@@ -450,7 +461,7 @@ export function Planner({
               </select>
 
               <div className="flex items-center gap-1">
-                {(["day", "week", "month"] as CalendarView[]).map((v) => (
+                {(["day", "week", "month", "list"] as CalendarView[]).map((v) => (
                   <button
                     key={v}
                     onClick={() => setView(v)}
@@ -472,11 +483,20 @@ export function Planner({
             </div>
           </div>
 
-          {/* Calendar surface */}
-          <div className="flex-1 overflow-hidden" style={{ background: "transparent" }}>
+          {/* Calendar / List surface */}
+          <div className="flex flex-1 overflow-hidden" style={{ background: "transparent" }}>
             {view === "month" && <MonthView {...viewProps} />}
             {view === "week" && <WeekView {...viewProps} />}
             {view === "day" && <DayView {...viewProps} />}
+            {view === "list" && (
+              <ListView
+                posts={posts}
+                client={activeClient}
+                canEdit={effectiveCanEdit}
+                onSelectPost={openPost}
+                onOrderChanged={(ordered) => setPosts(ordered)}
+              />
+            )}
           </div>
         </main>
       </div>

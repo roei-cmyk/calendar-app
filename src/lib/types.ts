@@ -73,6 +73,7 @@ export interface Post {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  sort_order: number | null;
   // populated by fetchPosts via an embedded aggregate; not a DB column
   comment_count?: number;
 }
@@ -85,7 +86,7 @@ export interface Comment {
   created_at: string;
 }
 
-export type CalendarView = "day" | "week" | "month";
+export type CalendarView = "day" | "week" | "month" | "list";
 
 export const POST_STATUS_LABELS: Record<PostStatus, string> = {
   draft: "טיוטה",
