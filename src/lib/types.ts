@@ -86,7 +86,7 @@ export interface Comment {
   created_at: string;
 }
 
-export type CalendarView = "day" | "week" | "month" | "list";
+export type CalendarView = "day" | "week" | "month";
 
 export const POST_STATUS_LABELS: Record<PostStatus, string> = {
   draft: "טיוטה",

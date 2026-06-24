@@ -42,7 +42,7 @@ export function monthGridDays(date: Date): Date[] {
   return days;
 }
 
-export function shiftDate(date: Date, view: "day" | "week" | "month" | "list", dir: 1 | -1): Date {
+export function shiftDate(date: Date, view: "day" | "week" | "month", dir: 1 | -1): Date {
   if (view === "day") return addDays(date, dir);
   if (view === "week") return addDays(date, dir * 7);
   return addMonths(date, dir);

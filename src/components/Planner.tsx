@@ -9,7 +9,7 @@ import {
 } from "date-fns";
 import type { CalendarView, Client, Post, PostStatus, Profile } from "@/lib/types";
 import { POST_STATUS_LABELS } from "@/lib/types";
-import { fetchPosts, fetchPostsForListView, updatePost } from "@/lib/posts";
+import { fetchPosts, updatePost } from "@/lib/posts";
 import { formatHebDate, shiftDate, toISODate } from "@/lib/date";
 import { MonthView } from "@/components/calendar/MonthView";
 import { WeekView } from "@/components/calendar/WeekView";
@@ -27,7 +27,6 @@ const VIEW_LABELS: Record<CalendarView, string> = {
   day: "יום",
   week: "שבוע",
   month: "חודש",
-  list: "רשימה",
 };
 
 function rangeFor(view: CalendarView, date: Date): { from: string; to: string } {
@@ -37,7 +36,6 @@ function rangeFor(view: CalendarView, date: Date): { from: string; to: string } 
       from: toISODate(startOfWeek(date, WEEK_OPTS)),
       to: toISODate(endOfWeek(date, WEEK_OPTS)),
     };
-  if (view === "list") return { from: toISODate(date), to: toISODate(date) };
   return {
     from: toISODate(startOfWeek(startOfMonth(date), WEEK_OPTS)),
     to: toISODate(endOfWeek(endOfMonth(date), WEEK_OPTS)),
@@ -65,6 +63,7 @@ export function Planner({
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
   const [clientFeedOpen, setClientFeedOpen] = useState(false);
+  const [listViewOpen,   setListViewOpen]   = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
 
@@ -83,24 +82,18 @@ export function Planner({
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      if (view === "list") {
-        if (!clientFilter) { setPosts([]); return; }
-        const data = await fetchPostsForListView(clientFilter);
-        setPosts(data);
-      } else {
-        const data = await fetchPosts({
-          from: range.from,
-          to: range.to,
-          clientId: clientFilter,
-        });
-        setPosts(data);
-      }
+      const data = await fetchPosts({
+        from: range.from,
+        to: range.to,
+        clientId: clientFilter,
+      });
+      setPosts(data);
     } catch {
       setPosts([]);
     } finally {
       setLoading(false);
     }
-  }, [view, range.from, range.to, clientFilter]);
+  }, [range.from, range.to, clientFilter]);
 
   useEffect(() => {
     load();
@@ -168,9 +161,7 @@ export function Planner({
       ? formatHebDate(current)
       : view === "week"
         ? `${formatHebDate(new Date(range.from), "d MMM")} – ${formatHebDate(new Date(range.to), "d MMM yyyy")}`
-        : view === "list"
-          ? (activeClient ? `רשימת פוסטים · ${activeClient.name}` : "רשימת פוסטים")
-          : formatHebDate(current, "MMMM yyyy");
+        : formatHebDate(current, "MMMM yyyy");
 
   const effectiveCanEdit = isAdmin;
 
@@ -374,9 +365,20 @@ export function Planner({
             </div>
           </div>
 
-          {/* Client view button */}
+          {/* Client view + list view buttons */}
           {isAdmin && clientFilter && (
-            <div className="mt-auto">
+            <div className="mt-auto flex flex-col gap-2">
+              <button
+                onClick={() => setListViewOpen(true)}
+                className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
+                style={{
+                  background: "rgba(124,58,237,0.15)",
+                  border: "0.5px solid rgba(167,139,250,0.4)",
+                  color: "rgba(196,181,253,0.9)",
+                }}
+              >
+                📋 תצוגת רשימה
+              </button>
               <button
                 onClick={() => setClientFeedOpen(true)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
@@ -483,20 +485,11 @@ export function Planner({
             </div>
           </div>
 
-          {/* Calendar / List surface */}
-          <div className="flex flex-1 overflow-hidden" style={{ background: "transparent" }}>
+          {/* Calendar surface */}
+          <div className="flex-1 overflow-hidden" style={{ background: "transparent" }}>
             {view === "month" && <MonthView {...viewProps} />}
             {view === "week" && <WeekView {...viewProps} />}
             {view === "day" && <DayView {...viewProps} />}
-            {view === "list" && (
-              <ListView
-                posts={posts}
-                client={activeClient}
-                canEdit={effectiveCanEdit}
-                onSelectPost={openPost}
-                onOrderChanged={(ordered) => setPosts(ordered)}
-              />
-            )}
           </div>
         </main>
       </div>
@@ -520,6 +513,43 @@ export function Planner({
             clientName={activeClient.name}
             onClose={() => setClientFeedOpen(false)}
           />
+        </div>
+      )}
+
+      {listViewOpen && activeClient && (
+        <div
+          className="fixed inset-0 z-[9998] flex"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+          onClick={() => setListViewOpen(false)}
+        >
+          <div
+            className="relative mr-auto flex h-full w-full max-w-xl flex-col"
+            style={{
+              background: "linear-gradient(160deg, #0f0630 0%, #2d1270 60%, #4c1d95 100%)",
+              borderLeft: "0.5px solid rgba(167,139,250,0.2)",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div
+              className="flex shrink-0 items-center justify-between px-5 py-3.5"
+              style={{ background: "rgba(0,0,0,0.3)", borderBottom: "0.5px solid rgba(167,139,250,0.2)" }}
+            >
+              <div>
+                <span className="font-bold text-white">📋 רשימת פוסטים</span>
+                <span className="mr-2 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>{activeClient.name}</span>
+              </div>
+              <button
+                onClick={() => setListViewOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-lg transition"
+                style={{ color: "rgba(167,139,250,0.6)", background: "rgba(255,255,255,0.07)" }}
+              >×</button>
+            </div>
+            <ListView
+              client={activeClient}
+              canEdit={effectiveCanEdit}
+              onSelectPost={(post) => { setListViewOpen(false); openPost(post); }}
+            />
+          </div>
         </div>
       )}
 

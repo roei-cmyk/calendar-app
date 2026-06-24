@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Client, Post, PostStatus } from "@/lib/types";
 import { POST_STATUS_LABELS } from "@/lib/types";
-import { updateSortOrders } from "@/lib/posts";
+import { fetchPostsForListView, updateSortOrders } from "@/lib/posts";
 
 const STATUS_STYLE: Record<PostStatus, { bg: string; color: string }> = {
   draft:     { bg: "rgba(75,72,105,0.35)",  color: "#9d9abf" },
@@ -15,8 +15,8 @@ const STATUS_STYLE: Record<PostStatus, { bg: string; color: string }> = {
 
 function DragHandle() {
   return (
-    <div className="flex shrink-0 flex-col gap-[3px] opacity-25 group-hover:opacity-60 transition-opacity cursor-grab mt-0.5">
-      {[0,1,2].map(i => (
+    <div className="flex shrink-0 flex-col gap-[3px] opacity-20 group-hover:opacity-55 transition-opacity cursor-grab mt-0.5">
+      {[0, 1, 2].map(i => (
         <div key={i} className="h-[2px] w-4 rounded-full bg-white" />
       ))}
     </div>
@@ -24,43 +24,27 @@ function DragHandle() {
 }
 
 export function ListView({
-  posts: initialPosts,
   client,
   canEdit,
   onSelectPost,
-  onOrderChanged,
 }: {
-  posts: Post[];
-  client: Client | null;
+  client: Client;
   canEdit: boolean;
   onSelectPost: (post: Post) => void;
-  onOrderChanged: (posts: Post[]) => void;
 }) {
-  const [items, setItems]         = useState<Post[]>(initialPosts);
+  const [items, setItems]         = useState<Post[]>([]);
+  const [loading, setLoading]     = useState(true);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [saving, setSaving]       = useState(false);
 
-  useEffect(() => { setItems(initialPosts); }, [initialPosts]);
-
-  if (!client) {
-    return (
-      <div className="flex h-full items-center justify-center text-center">
-        <div>
-          <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.4 }}>📋</div>
-          <p style={{ color: "rgba(167,139,250,0.5)", fontSize: 14 }}>בחר לקוח מהסייד-בר לצפייה ברשימה</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p style={{ color: "rgba(167,139,250,0.4)", fontSize: 14 }}>אין פוסטים ללקוח זה</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    setLoading(true);
+    fetchPostsForListView(client.id)
+      .then(setItems)
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [client.id]);
 
   function handleDragOver(e: React.DragEvent, index: number) {
     e.preventDefault();
@@ -70,36 +54,47 @@ export function ListView({
   function handleDrop(e: React.DragEvent, targetIndex: number) {
     e.preventDefault();
     if (dragIndex === null || dragIndex === targetIndex) {
-      setDragIndex(null);
-      setOverIndex(null);
-      return;
+      setDragIndex(null); setOverIndex(null); return;
     }
     const next = [...items];
     const [moved] = next.splice(dragIndex, 1);
     next.splice(targetIndex, 0, moved);
     setItems(next);
-    setDragIndex(null);
-    setOverIndex(null);
+    setDragIndex(null); setOverIndex(null);
     const updates = next.map((p, i) => ({ id: p.id, sort_order: i }));
     setSaving(true);
     updateSortOrders(updates).finally(() => setSaving(false));
-    onOrderChanged(next);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p style={{ color: "rgba(167,139,250,0.4)", fontSize: 14 }}>אין פוסטים ללקוח זה</p>
+      </div>
+    );
   }
 
   return (
     <div className="scroll-thin flex-1 overflow-y-auto px-4 py-3">
-      {/* Header */}
-      <div className="mx-auto mb-3 flex max-w-2xl items-center justify-between">
-        <span style={{ color: "rgba(167,139,250,0.5)", fontSize: 12 }}>
+      <div className="mb-3 flex items-center justify-between">
+        <span style={{ color: "rgba(167,139,250,0.45)", fontSize: 12 }}>
           {items.length} פוסטים
           {canEdit && " · גרור לשינוי סדר עבודה"}
         </span>
         {saving && (
-          <span style={{ color: "rgba(167,139,250,0.5)", fontSize: 11 }}>שומר סדר…</span>
+          <span style={{ color: "rgba(167,139,250,0.45)", fontSize: 11 }}>שומר סדר…</span>
         )}
       </div>
 
-      <div className="mx-auto max-w-2xl space-y-2">
+      <div className="space-y-2">
         {items.map((post, index) => {
           const isDragging = dragIndex === index;
           const isOver     = overIndex === index && dragIndex !== null && dragIndex !== index;
@@ -120,12 +115,10 @@ export function ListView({
                 borderRadius: 12,
                 padding: "10px 14px",
                 cursor: "pointer",
-                transition: "all 0.15s",
-                opacity: isDragging ? 0.35 : 1,
+                transition: "all 0.12s",
+                opacity: isDragging ? 0.3 : 1,
                 transform: isOver ? "scale(1.01)" : "scale(1)",
-                background: isOver
-                  ? "rgba(124,58,237,0.22)"
-                  : "rgba(255,255,255,0.04)",
+                background: isOver ? "rgba(124,58,237,0.22)" : "rgba(255,255,255,0.04)",
                 border: isOver
                   ? "1px solid rgba(124,58,237,0.55)"
                   : "0.5px solid rgba(167,139,250,0.13)",
@@ -134,7 +127,6 @@ export function ListView({
               <div className="flex items-start gap-3">
                 {canEdit && <DragHandle />}
 
-                {/* Thumbnail */}
                 {post.media_url && !isVideo && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -156,9 +148,7 @@ export function ListView({
                   }}>🎬</div>
                 )}
 
-                {/* Content */}
                 <div className="min-w-0 flex-1">
-                  {/* Meta row */}
                   <div className="mb-1 flex flex-wrap items-center gap-2">
                     <span style={{ fontSize: 11, color: "rgba(167,139,250,0.55)" }}>
                       {new Date(post.scheduled_date + "T12:00:00").toLocaleDateString("he-IL", {
@@ -181,7 +171,6 @@ export function ListView({
                     )}
                   </div>
 
-                  {/* Title */}
                   <p style={{
                     fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)",
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -189,7 +178,6 @@ export function ListView({
                     {post.title}
                   </p>
 
-                  {/* Body preview */}
                   {post.body && (
                     <p style={{
                       fontSize: 11, marginTop: 2, color: "rgba(196,181,253,0.55)",
@@ -200,7 +188,6 @@ export function ListView({
                     </p>
                   )}
 
-                  {/* Platform */}
                   {post.platform && (
                     <p style={{ fontSize: 10, marginTop: 4, color: "rgba(167,139,250,0.35)" }}>
                       {post.platform}
