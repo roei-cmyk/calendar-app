@@ -550,7 +550,9 @@ export function Planner({
             >
               <div>
                 <span className="font-bold text-white">📋 רשימת פוסטים</span>
-                {activeClient && <span className="mr-2 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>{activeClient.name}</span>}
+                <span className="mr-2 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>
+                  {activeClient ? activeClient.name : "כל הלקוחות"}
+                </span>
               </div>
               <button
                 onClick={() => setListViewOpen(false)}

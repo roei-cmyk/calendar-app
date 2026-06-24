@@ -73,13 +73,14 @@ export async function fetchComments(postId: string): Promise<Comment[]> {
   return data ?? [];
 }
 
-export async function fetchPostsForListView(clientId: string): Promise<Post[]> {
-  const { data, error } = await supabase
+export async function fetchPostsForListView(clientId?: string | null): Promise<Post[]> {
+  let query = supabase
     .from("posts")
     .select("*, comments(count)")
-    .eq("client_id", clientId)
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("scheduled_date", { ascending: true });
+  if (clientId) query = query.eq("client_id", clientId);
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []).map((row) => {
     const { comments, ...post } = row as Post & { comments?: { count: number }[] };
