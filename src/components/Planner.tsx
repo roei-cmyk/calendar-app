@@ -463,7 +463,7 @@ export function Planner({
               </select>
 
               <div className="flex items-center gap-1">
-                {(["day", "week", "month", "list"] as CalendarView[]).map((v) => (
+                {(["day", "week", "month"] as CalendarView[]).map((v) => (
                   <button
                     key={v}
                     onClick={() => setView(v)}
@@ -481,6 +481,19 @@ export function Planner({
                     {VIEW_LABELS[v]}
                   </button>
                 ))}
+                {isAdmin && clientFilter && (
+                  <button
+                    onClick={() => setListViewOpen(true)}
+                    className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
+                    style={{
+                      borderColor: "rgba(167,139,250,0.3)",
+                      background: "transparent",
+                      color: "#a78bfa",
+                    }}
+                  >
+                    רשימה
+                  </button>
+                )}
               </div>
             </div>
           </div>
