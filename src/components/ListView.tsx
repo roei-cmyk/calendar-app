@@ -28,23 +28,24 @@ export function ListView({
   canEdit,
   onSelectPost,
 }: {
-  client: Client;
+  client: Client | null;
   canEdit: boolean;
   onSelectPost: (post: Post) => void;
 }) {
   const [items, setItems]         = useState<Post[]>([]);
-  const [loading, setLoading]     = useState(true);
+  const [loading, setLoading]     = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [saving, setSaving]       = useState(false);
 
   useEffect(() => {
+    if (!client) { setItems([]); return; }
     setLoading(true);
     fetchPostsForListView(client.id)
       .then(setItems)
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [client.id]);
+  }, [client?.id]);
 
   function handleDragOver(e: React.DragEvent, index: number) {
     e.preventDefault();
@@ -64,6 +65,17 @@ export function ListView({
     const updates = next.map((p, i) => ({ id: p.id, sort_order: i }));
     setSaving(true);
     updateSortOrders(updates).finally(() => setSaving(false));
+  }
+
+  if (!client) {
+    return (
+      <div className="flex flex-1 items-center justify-center text-center px-6">
+        <div>
+          <div style={{ fontSize: 32, marginBottom: 10, opacity: 0.4 }}>👈</div>
+          <p style={{ color: "rgba(167,139,250,0.6)", fontSize: 14 }}>בחר לקוח מהסייד-בר כדי לראות את הרשימה</p>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {

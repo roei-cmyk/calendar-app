@@ -483,14 +483,13 @@ export function Planner({
                 ))}
                 {isAdmin && (
                   <button
-                    onClick={() => clientFilter ? setListViewOpen(true) : undefined}
+                    onClick={() => setListViewOpen(true)}
                     className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
                     style={{
                       borderColor: "rgba(167,139,250,0.3)",
                       background: "transparent",
                       color: "#a78bfa",
                       cursor: clientFilter ? "pointer" : "default",
-                      opacity: clientFilter ? 1 : 0.4,
                     }}
                   >
                     רשימת פוסטים
@@ -531,7 +530,7 @@ export function Planner({
         </div>
       )}
 
-      {listViewOpen && activeClient && (
+      {listViewOpen && (
         <div
           className="fixed inset-0 z-[9998] flex"
           style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
@@ -551,7 +550,7 @@ export function Planner({
             >
               <div>
                 <span className="font-bold text-white">📋 רשימת פוסטים</span>
-                <span className="mr-2 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>{activeClient.name}</span>
+                {activeClient && <span className="mr-2 text-xs" style={{ color: "rgba(167,139,250,0.6)" }}>{activeClient.name}</span>}
               </div>
               <button
                 onClick={() => setListViewOpen(false)}
