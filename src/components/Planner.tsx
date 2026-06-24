@@ -377,7 +377,7 @@ export function Planner({
                   color: "rgba(196,181,253,0.9)",
                 }}
               >
-                📋 תצוגת רשימה
+                📋 רשימת פוסטים
               </button>
               <button
                 onClick={() => setClientFeedOpen(true)}
