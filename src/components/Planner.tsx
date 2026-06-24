@@ -481,14 +481,15 @@ export function Planner({
                     {VIEW_LABELS[v]}
                   </button>
                 ))}
-                {isAdmin && clientFilter && (
+                {isAdmin && (
                   <button
-                    onClick={() => setListViewOpen(true)}
+                    onClick={() => clientFilter ? setListViewOpen(true) : undefined}
                     className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
                     style={{
-                      borderColor: "rgba(167,139,250,0.3)",
-                      background: "transparent",
-                      color: "#a78bfa",
+                      borderColor: clientFilter ? "rgba(167,139,250,0.6)" : "rgba(167,139,250,0.2)",
+                      background: clientFilter ? "rgba(124,58,237,0.25)" : "transparent",
+                      color: clientFilter ? "#e9d5ff" : "rgba(167,139,250,0.3)",
+                      cursor: clientFilter ? "pointer" : "default",
                     }}
                   >
                     רשימה
