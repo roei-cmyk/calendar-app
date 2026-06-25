@@ -20,6 +20,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { ClientFeed } from "@/components/ClientFeed";
 import { ListView } from "@/components/ListView";
 import { TaskPanel } from "@/components/TaskPanel";
+import { GanttView } from "@/components/GanttView";
 import { logout } from "@/app/login/actions";
 
 const WEEK_OPTS = { weekStartsOn: 0 as const };
@@ -66,6 +67,7 @@ export function Planner({
   const [clientFeedOpen,  setClientFeedOpen]  = useState(false);
   const [listViewOpen,    setListViewOpen]    = useState(false);
   const [taskPanelOpen,   setTaskPanelOpen]   = useState(false);
+  const [ganttOpen,       setGanttOpen]       = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
 
@@ -459,19 +461,32 @@ export function Planner({
               )}
             </div>
 
-            {/* Center: tasks */}
+            {/* Center: tasks + gantt */}
             {isAdmin && (
-              <button
-                onClick={() => setTaskPanelOpen(true)}
-                className="rounded-full border px-5 py-1.5 text-sm font-semibold transition"
-                style={{
-                  borderColor: "rgba(52,211,153,0.45)",
-                  background: "rgba(16,185,129,0.13)",
-                  color: "#6ee7b7",
-                }}
-              >
-                ✅ משימות
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setTaskPanelOpen(true)}
+                  className="rounded-full border px-4 py-1.5 text-sm font-semibold transition"
+                  style={{
+                    borderColor: "rgba(52,211,153,0.45)",
+                    background: "rgba(16,185,129,0.13)",
+                    color: "#6ee7b7",
+                  }}
+                >
+                  ✅ משימות
+                </button>
+                <button
+                  onClick={() => setGanttOpen(true)}
+                  className="rounded-full border px-4 py-1.5 text-sm font-semibold transition"
+                  style={{
+                    borderColor: "rgba(251,191,36,0.4)",
+                    background: "rgba(251,191,36,0.1)",
+                    color: "#fcd34d",
+                  }}
+                >
+                  📊 גאנט
+                </button>
+              </div>
             )}
 
             {/* Left: status filter + view switcher */}
@@ -599,6 +614,22 @@ export function Planner({
               onSelectPost={(post) => { setListViewOpen(false); openPost(post); }}
             />
           </div>
+        </div>
+      )}
+
+      {ganttOpen && (
+        <div className="fixed inset-0 z-[9998] flex flex-col"
+          style={{ background: "linear-gradient(135deg, #0f0630 0%, #2d1270 40%, #4c1d95 100%)" }}>
+          <div className="flex shrink-0 items-center justify-between px-5 py-3.5"
+            style={{ background: "rgba(0,0,0,0.35)", borderBottom: "0.5px solid rgba(167,139,250,0.2)" }}>
+            <span className="font-bold text-white">📊 גאנט</span>
+            <button
+              onClick={() => setGanttOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-lg transition"
+              style={{ color: "rgba(167,139,250,0.6)", background: "rgba(255,255,255,0.07)" }}
+            >×</button>
+          </div>
+          <GanttView clients={clientsList} />
         </div>
       )}
 

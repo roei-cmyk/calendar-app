@@ -89,12 +89,13 @@ export interface Comment {
 export type CalendarView = "day" | "week" | "month";
 
 export type Recurrence = "none" | "daily" | "weekly" | "monthly";
-export type TaskStatus = "pending" | "done";
+export type TaskStatus = "pending" | "in_progress" | "done";
 
 export interface Task {
   id: string;
   title: string;
   client_id: string | null;
+  start_date: string | null;
   due_date: string | null;
   recurrence: Recurrence;
   status: TaskStatus;

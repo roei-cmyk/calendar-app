@@ -6,6 +6,7 @@ const supabase = createClient();
 export type TaskInput = {
   title: string;
   client_id: string | null;
+  start_date: string | null;
   due_date: string | null;
   recurrence: Recurrence;
   status: TaskStatus;
