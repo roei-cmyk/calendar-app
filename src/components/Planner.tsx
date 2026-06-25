@@ -415,14 +415,15 @@ export function Planner({
         <main className="flex flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
           <div
-            className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5"
+            className="flex items-center border-b px-4 py-2.5"
             style={{
               background: "rgba(0,0,0,0.2)",
               borderColor: "rgba(255,255,255,0.12)",
               backdropFilter: "blur(12px)",
             }}
           >
-            <div className="flex items-center gap-1">
+            {/* Right: navigation */}
+            <div className="flex flex-1 items-center gap-1">
               <button
                 onClick={() => setCurrent((d) => shiftDate(d, view, 1))}
                 className="rounded-full px-2.5 py-1.5 transition"
@@ -458,7 +459,23 @@ export function Planner({
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Center: tasks */}
+            {isAdmin && (
+              <button
+                onClick={() => setTaskPanelOpen(true)}
+                className="rounded-full border px-5 py-1.5 text-sm font-semibold transition"
+                style={{
+                  borderColor: "rgba(52,211,153,0.45)",
+                  background: "rgba(16,185,129,0.13)",
+                  color: "#6ee7b7",
+                }}
+              >
+                ✅ משימות
+              </button>
+            )}
+
+            {/* Left: status filter + view switcher */}
+            <div className="flex flex-1 items-center justify-end gap-2">
               <select
                 value={statusFilter}
                 onChange={(e) =>
@@ -478,20 +495,6 @@ export function Planner({
                   </option>
                 ))}
               </select>
-
-              {isAdmin && (
-                <button
-                  onClick={() => setTaskPanelOpen(true)}
-                  className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
-                  style={{
-                    borderColor: "rgba(52,211,153,0.4)",
-                    background: "rgba(16,185,129,0.12)",
-                    color: "#6ee7b7",
-                  }}
-                >
-                  ✅ משימות
-                </button>
-              )}
 
               <div className="flex items-center gap-1">
                 {(["day", "week", "month"] as CalendarView[]).map((v) => (
