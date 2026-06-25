@@ -88,6 +88,21 @@ export interface Comment {
 
 export type CalendarView = "day" | "week" | "month";
 
+export type Recurrence = "none" | "daily" | "weekly" | "monthly";
+export type TaskStatus = "pending" | "done";
+
+export interface Task {
+  id: string;
+  title: string;
+  client_id: string | null;
+  due_date: string | null;
+  recurrence: Recurrence;
+  status: TaskStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const POST_STATUS_LABELS: Record<PostStatus, string> = {
   draft: "טיוטה",
   pending: "ממתין לאישור",

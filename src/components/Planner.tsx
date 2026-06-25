@@ -19,6 +19,7 @@ import { ClientProfileModal } from "@/components/ClientProfileModal";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ClientFeed } from "@/components/ClientFeed";
 import { ListView } from "@/components/ListView";
+import { TaskPanel } from "@/components/TaskPanel";
 import { logout } from "@/app/login/actions";
 
 const WEEK_OPTS = { weekStartsOn: 0 as const };
@@ -62,8 +63,9 @@ export function Planner({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [createDate, setCreateDate] = useState<string>(toISODate(new Date()));
-  const [clientFeedOpen, setClientFeedOpen] = useState(false);
-  const [listViewOpen,   setListViewOpen]   = useState(false);
+  const [clientFeedOpen,  setClientFeedOpen]  = useState(false);
+  const [listViewOpen,    setListViewOpen]    = useState(false);
+  const [taskPanelOpen,   setTaskPanelOpen]   = useState(false);
   const [profileClient, setProfileClient] = useState<Client | null>(null);
   const [clientsList, setClientsList] = useState<Client[]>(clients);
 
@@ -365,11 +367,11 @@ export function Planner({
             </div>
           </div>
 
-          {/* Client view + list view buttons */}
-          {isAdmin && clientFilter && (
+          {/* Sidebar action buttons */}
+          {isAdmin && (
             <div className="mt-auto flex flex-col gap-2">
               <button
-                onClick={() => setListViewOpen(true)}
+                onClick={() => setTaskPanelOpen(true)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
                 style={{
                   background: "rgba(124,58,237,0.15)",
@@ -377,19 +379,34 @@ export function Planner({
                   color: "rgba(196,181,253,0.9)",
                 }}
               >
-                📋 רשימת פוסטים
+                ✅ משימות
               </button>
-              <button
-                onClick={() => setClientFeedOpen(true)}
-                className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
-                style={{
-                  background: "rgba(124,58,237,0.15)",
-                  border: "0.5px solid rgba(167,139,250,0.4)",
-                  color: "rgba(196,181,253,0.9)",
-                }}
-              >
-                👁 תצוגת לקוח מדויקת
-              </button>
+              {clientFilter && (
+                <>
+                  <button
+                    onClick={() => setListViewOpen(true)}
+                    className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
+                    style={{
+                      background: "rgba(124,58,237,0.15)",
+                      border: "0.5px solid rgba(167,139,250,0.4)",
+                      color: "rgba(196,181,253,0.9)",
+                    }}
+                  >
+                    📋 רשימת פוסטים
+                  </button>
+                  <button
+                    onClick={() => setClientFeedOpen(true)}
+                    className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition"
+                    style={{
+                      background: "rgba(124,58,237,0.15)",
+                      border: "0.5px solid rgba(167,139,250,0.4)",
+                      color: "rgba(196,181,253,0.9)",
+                    }}
+                  >
+                    👁 תצוגת לקוח מדויקת
+                  </button>
+                </>
+              )}
             </div>
           )}
         </aside>
@@ -489,10 +506,22 @@ export function Planner({
                       borderColor: "rgba(167,139,250,0.3)",
                       background: "transparent",
                       color: "#a78bfa",
-                      cursor: clientFilter ? "pointer" : "default",
                     }}
                   >
                     רשימת פוסטים
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => setTaskPanelOpen(true)}
+                    className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
+                    style={{
+                      borderColor: "rgba(167,139,250,0.3)",
+                      background: "transparent",
+                      color: "#a78bfa",
+                    }}
+                  >
+                    משימות
                   </button>
                 )}
               </div>
@@ -565,6 +594,36 @@ export function Planner({
               canEdit={effectiveCanEdit}
               onSelectPost={(post) => { setListViewOpen(false); openPost(post); }}
             />
+          </div>
+        </div>
+      )}
+
+      {taskPanelOpen && (
+        <div
+          className="fixed inset-0 z-[9998] flex"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+          onClick={() => setTaskPanelOpen(false)}
+        >
+          <div
+            className="relative mr-auto flex h-full w-full max-w-xl flex-col"
+            style={{
+              background: "linear-gradient(160deg, #0f0630 0%, #2d1270 60%, #4c1d95 100%)",
+              borderLeft: "0.5px solid rgba(167,139,250,0.2)",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div
+              className="flex shrink-0 items-center justify-between px-5 py-3.5"
+              style={{ background: "rgba(0,0,0,0.3)", borderBottom: "0.5px solid rgba(167,139,250,0.2)" }}
+            >
+              <span className="font-bold text-white">✅ משימות</span>
+              <button
+                onClick={() => setTaskPanelOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-lg transition"
+                style={{ color: "rgba(167,139,250,0.6)", background: "rgba(255,255,255,0.07)" }}
+              >×</button>
+            </div>
+            <TaskPanel clients={clientsList} profile={profile} />
           </div>
         </div>
       )}
