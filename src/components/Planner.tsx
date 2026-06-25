@@ -479,6 +479,20 @@ export function Planner({
                 ))}
               </select>
 
+              {isAdmin && (
+                <button
+                  onClick={() => setTaskPanelOpen(true)}
+                  className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
+                  style={{
+                    borderColor: "rgba(52,211,153,0.4)",
+                    background: "rgba(16,185,129,0.12)",
+                    color: "#6ee7b7",
+                  }}
+                >
+                  ✅ משימות
+                </button>
+              )}
+
               <div className="flex items-center gap-1">
                 {(["day", "week", "month"] as CalendarView[]).map((v) => (
                   <button
@@ -509,19 +523,6 @@ export function Planner({
                     }}
                   >
                     רשימת פוסטים
-                  </button>
-                )}
-                {isAdmin && (
-                  <button
-                    onClick={() => setTaskPanelOpen(true)}
-                    className="rounded-full border px-4 py-1.5 text-sm font-medium transition"
-                    style={{
-                      borderColor: "rgba(167,139,250,0.3)",
-                      background: "transparent",
-                      color: "#a78bfa",
-                    }}
-                  >
-                    משימות
                   </button>
                 )}
               </div>
