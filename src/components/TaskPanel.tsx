@@ -120,8 +120,10 @@ export function TaskPanel({
 }) {
   const [tasks, setTasks]       = useState<Task[]>([]);
   const [loading, setLoading]   = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [addOpen, setAddOpen]   = useState(false);
   const [saving, setSaving]     = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [newTitle,      setNewTitle]      = useState("");
   const [newDate,       setNewDate]       = useState("");
@@ -131,7 +133,10 @@ export function TaskPanel({
   useEffect(() => {
     fetchTasks()
       .then(setTasks)
-      .catch(() => setTasks([]))
+      .catch((err) => {
+        setTasks([]);
+        setLoadError(err?.message ?? "שגיאה בטעינת משימות");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -167,6 +172,7 @@ export function TaskPanel({
     e.preventDefault();
     if (!newTitle.trim()) return;
     setSaving(true);
+    setSaveError(null);
     try {
       const task = await createTask({
         title:       newTitle.trim(),
@@ -179,6 +185,9 @@ export function TaskPanel({
       setTasks(prev => [...prev, task]);
       setNewTitle(""); setNewDate(""); setNewClientId(""); setNewRecurrence("none");
       setAddOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "שגיאה בשמירה";
+      setSaveError(msg.includes("relation") ? 'הטבלה לא קיימת — הרץ את ה-SQL migration ב-Supabase' : msg);
     } finally {
       setSaving(false);
     }
@@ -282,6 +291,11 @@ export function TaskPanel({
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
+          {saveError && (
+            <p className="rounded-lg px-3 py-2 text-xs" style={{ background: "rgba(239,68,68,0.12)", color: "#fca5a5" }}>
+              ⚠️ {saveError}
+            </p>
+          )}
           <div className="flex gap-2">
             <button
               type="submit"
@@ -301,6 +315,13 @@ export function TaskPanel({
             </button>
           </div>
         </form>
+      )}
+
+      {/* Load error */}
+      {loadError && (
+        <div className="shrink-0 px-4 py-2.5 text-xs" style={{ background: "rgba(239,68,68,0.12)", color: "#fca5a5", borderBottom: "0.5px solid rgba(239,68,68,0.2)" }}>
+          ⚠️ {loadError}
+        </div>
       )}
 
       {/* List */}
